@@ -23,6 +23,8 @@
 #include <dirent.h>
 #include <limits.h>
 #include <string.h>
+#include "args.h"
+#include "common.h"
 #include <libexif/exif-data.h>
 
 void process_dir (const char* dir);
@@ -30,23 +32,39 @@ void process_file (const char* fqpn);
 void trim_spaces(char *buf);
 void show_tag(ExifData *d, ExifIfd ifd, ExifTag tag);
 
+counters_t counters;
+
 int main (int argc, char **argv)
 {
-  if (argc < 2)
+  memset (&counters,0,sizeof(counters_t));
+
+  const args_t* args = get_args (argc,argv);
+
+  if (!*args->src_dir && !*args->dst_dir || !*args->dup_dir)
   {
-    fprintf (stderr, "Usage: %s DIRECTORY\n", argv[0]);
-    exit (1);
+    show_help(argv[0]);
+    exit(1);
   }
 
-  process_dir (argv[1]);
+  process_dir (args->src_dir);
 
+  if (args->verbose)
+  {
+    printf ("Total files: %ld\n",counters.total_files);
+    printf ("Total dirs: %ld\n",counters.total_dirs);
+    printf ("With exif: %ld\n",counters.total_files-counters.missing_exif);
+    printf ("Without exif: %ld\n",counters.missing_exif);
+    printf ("With date: %ld\n",counters.total_files-counters.missing_exif-counters.missing_date);
+    printf ("Without date: %ld\n",counters.missing_date);
+    printf ("Duplicates: %ld\n",counters.duplicates);
+  }
   return 0;
 }
 
 /* Remove spaces on the right of the string */
-void trim_spaces(char *buf)
+void trim_spaces(char* buf)
 {
-  char *s = buf-1;
+  char* s = buf-1;
   for (; *buf; ++buf) {
     if (*buf != ' ')
       s = buf;
@@ -55,7 +73,7 @@ void trim_spaces(char *buf)
 }
 
 /* Show the tag name and contents if the tag exists */
-void show_tag(ExifData *d, ExifIfd ifd, ExifTag tag)
+void show_tag(ExifData* d, ExifIfd ifd, ExifTag tag)
 {
   /* See if this tag exists */
   ExifEntry *entry = exif_content_get_entry(d->ifd[ifd],tag);
@@ -69,6 +87,8 @@ void show_tag(ExifData *d, ExifIfd ifd, ExifTag tag)
       printf("%s: %s\n", exif_tag_get_name_in_ifd(tag,ifd), buf);
     }
   }
+  else
+    counters.missing_date++;
 }
 
 void process_file (const char* fqpn)
@@ -79,7 +99,10 @@ void process_file (const char* fqpn)
   /* Load an ExifData object from an EXIF file */
   ed = exif_data_new_from_file(fqpn);
   if (!ed)
+  {
+    counters.missing_exif++;
     return;  // no exif data in this file
+  }
 
   show_tag(ed, EXIF_IFD_0, EXIF_TAG_DATE_TIME);
   show_tag(ed, EXIF_IFD_EXIF, EXIF_TAG_DATE_TIME_ORIGINAL);
@@ -101,6 +124,8 @@ void process_dir (const char* dir)
     fprintf (stderr, "Cannot open directory '%s': %s\n",dir,strerror (errno));
     exit (1);
   }
+
+  counters.total_dirs++;
 
   while (1) {
     struct dirent* entry;
@@ -135,6 +160,7 @@ void process_dir (const char* dir)
 
     // if it's a regular file...
     if (entry->d_type & DT_REG) {
+      counters.total_files++;
       process_file (path);
     }
   }

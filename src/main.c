@@ -8,22 +8,24 @@
 #include <dirent.h>
 #include <limits.h>
 #include <string.h>
+#include <time.h>
+
+#include "main.h"
 #include "args.h"
 #include "exif.h"
 #include "sha.h"
 #include "common.h"
 
-void process_dir (const char* dir);
-void process_file (const char* dir, const char* name, const char* fqpn);
-
 counters_t counters;
+const args_t* args = 0;
 
 int main (int argc, char **argv)
 {
   memset (&counters,0,sizeof(counters_t));
 
-  const args_t* args = get_args (argc,argv);
+  args = get_args (argc,argv);
 
+  // if no dateless_dir, we just leave the original file as is
   if (!*args->src_dir && !*args->dst_dir || !*args->dup_dir)
   {
     show_help(argv[0]);
@@ -36,54 +38,123 @@ int main (int argc, char **argv)
   {
     printf ("Total files: %ld\n",counters.total_files);
     printf ("Total dirs: %ld\n",counters.total_dirs);
-    printf ("With exif: %ld\n",counters.total_files-counters.missing_exif);
-    printf ("Without exif: %ld\n",counters.missing_exif);
-    printf ("With date: %ld\n",counters.total_files-counters.missing_exif-counters.missing_date);
-    printf ("Without date: %ld\n",counters.missing_date);
+    printf ("With date: %ld\n",counters.total_files-counters.missing_exif_date);
+    printf ("Without date: %ld\n",counters.missing_exif_date);
     printf ("Duplicates: %ld\n",counters.duplicates);
   }
   return 0;
 }
 
-void process_file (const char* dir, const char* name, const char* fqpn)
+// handles dateless, duplicates and normal destination
+void process_operation(const char* src_fqpn, const char* dst_dir, const char* dst_name)
 {
+//  snprintf (dst_fqpn, PATH_MAX,"%s/%s", dir, dst_name);
+
+  switch (args->operation)
+  {
+    case OPERATION_NOP:
+      printf ("Suggest copy/move %s -> %s/%s\n",src_fqpn,dst_dir,dst_name);
+    break;
+
+    case OPERATION_COPY:
+      printf ("Copy %s -> %s/%s\n",src_fqpn,dst_dir,dst_name);
+    break;
+
+    case OPERATION_MOVE:
+      printf ("Move %s -> %s/%s\n",src_fqpn,dst_dir,dst_name);
+    break;
+  }
+}
+
+bool to_long (const char* s, long* l)
+{
+  char dummy = '\0';
+  char* lastValid = &dummy;
+  errno = 0;  // we must use errno, since we have to set it to 0 before calling strtoul
+  *l = strtoul (s,&lastValid,10);
+
+  if (!lastValid || *lastValid != 0 || errno != 0)
+    return false;
+  else
+    return true;
+}
+
+bool format_dst (const char* base_dir, const char* date, const char* dst_name, char* dst_dir, char* dst_fqpn)
+{
+  memset (dst_dir,0,PATH_MAX);
+  struct tm ft;
+
+  // exif date format is 'YYYY:MM:DD HH:MM:SS'
+  if (sscanf(date, "%d:%d:%d %d:%d:%d",&ft.tm_year,&ft.tm_mon,&ft.tm_mday,&ft.tm_hour,&ft.tm_min,&ft.tm_sec) != 6)
+    return false;
+
+  /* Uncomment the following to make the struct tm valid*/
+//  ft.tm_isdst = -1;  // no dst data available
+//  ft.tm_mon -= 1;    // zero-based months
+//  ft.tm_year -= 1900;  // years are offset from 1900
+
+  if (!ft.tm_year || !ft.tm_mon || !ft.tm_mday)
+    return false;
+
+  snprintf (dst_dir,PATH_MAX-1,"%s/%04u/%02u-%02u",base_dir,ft.tm_year,ft.tm_mon,ft.tm_mday);
+  snprintf (dst_fqpn,PATH_MAX-1,"%s/%s",dst_dir,dst_name);
+  return true;
+}
+
+void process_file (const char* src_dir, const char* src_name, const char* src_fqpn)
+{
+  // first compute the sha1 of the source file
+  char dst_name[PATH_MAX];
+  if (!compute_sha1(src_fqpn,dst_name))
+    return;
+
+  // now attempt to get an exif date
   char date[1024];
   memset (&date,0,sizeof(date));
 
-  if (exif_date (fqpn,date))
+  if (exif_date (src_fqpn,date,sizeof(date)))
   {
-    char dst[PATH_MAX];
-    memset (dst,0,sizeof(dst));
-
-    // time_t t = convert_exif_date (buf);
-
-    struct stat st_src;
-    int ret = stat(fqpn,&st_src);
-    if (ret != 0)
+    // format a destination dir and fqpn
+    char dst_dir[PATH_MAX];
+    char dst_fqpn[PATH_MAX];
+    if (!format_dst (args->dst_dir,date,dst_name,dst_dir,dst_fqpn))
     {
-      fprintf (stderr,"Failed to stat source file '%s': %s.\n",fqpn,strerror (errno));
+      fprintf (stderr,"Invalid date format '%s' in file %s.\n",date,src_fqpn);
       return;
     }
 
-    char mds[SHA1_SBUF_LEN];
-    if (compute_sha1(fqpn,mds))
-      printf ("%s  %s\n",mds,fqpn);
+    struct stat st_src;
+    int ret = stat(src_fqpn,&st_src);
+    if (ret != 0)
+    {
+      fprintf (stderr,"Failed to stat source file %s: %s.\n",src_fqpn,strerror (errno));
+      return;
+    }
 
     struct stat st_dst;
-    ret = stat(dst,&st_dst);
+    ret = stat(dst_fqpn,&st_dst);
     if (ret == 0) // dst file exists already - // FLAG: Does it have the same content??
+    {
       if (!same_file (&st_src,&st_dst))
-      ;
-//        process_duplicate();
+        process_operation(src_fqpn,args->dup_dir,dst_name);  // send file to dup dir
       else
-      ;
-//        skip; // src=dst already
+      {
+        if (args->verbose)
+          printf ("Nothing to do for %s.\n",src_fqpn);
+      }
+    }
     else
-    ;
-//      copy_or_move (fqpn,dst); // dst does not exist, perform operation
+    {
+      // Could not stat dst, file does not exist
+      process_operation (src_fqpn,dst_dir,dst_name); // send file to formatted dst_dir
+    }
   }
   else
-    counters.missing_date++;
+  {
+    // no exif date; send this file to the dateless dir
+    process_operation (src_fqpn,args->dateless_dir,dst_name);
+    counters.missing_exif_date++;
+  }
 }
 
 void process_dir (const char* dir)
@@ -92,7 +163,7 @@ void process_dir (const char* dir)
   d = opendir (dir);
 
   if (!d) {
-    fprintf (stderr, "Failed to open directory '%s': %s.\n",dir,strerror (errno));
+    fprintf (stderr, "Failed to open directory %s: %s.\n",dir,strerror (errno));
     exit (1);
   }
 
@@ -133,7 +204,7 @@ void process_dir (const char* dir)
   }
 
   if (closedir (d)) {
-    fprintf (stderr, "Failed to close '%s': %s.\n", dir, strerror (errno));
+    fprintf (stderr, "Failed to close %s: %s.\n", dir, strerror (errno));
     exit (1);
   }
 }

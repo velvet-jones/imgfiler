@@ -10,8 +10,7 @@ typedef struct {
   long  total_files;
   long  total_dirs;
   long  duplicates;
-  long  missing_exif;
-  long  missing_date;
+  long  missing_exif_date;
 } counters_t;
 
 extern counters_t counters;

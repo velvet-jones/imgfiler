@@ -4,8 +4,6 @@
 #include "common.h"
 #include <libexif/exif-data.h>
 
-bool exif_date (const char* fqpn, char* date);
-
-void get_tag(ExifData* d, ExifIfd ifd, ExifTag tag, char* buf);
+bool exif_date (const char* fqpn, char* date, int len);
 
 #endif // INC_EXIF_H

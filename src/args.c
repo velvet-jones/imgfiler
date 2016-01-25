@@ -16,20 +16,22 @@ const args_t* get_args (int argc, char **argv)
   while (1) {
     static struct option long_options[] = {
         {"verbose",     no_argument,       &args.verbose, 1},
-        {"move",        no_argument,       &args.operation, 1},
-        {"dry-run",     no_argument,       &args.dry_run, 1},
+        {"nop",         no_argument,       &args.operation, 0},
+        {"copy",        no_argument,       &args.operation, 1},
+        {"move",        no_argument,       &args.operation, 2},
         {"version",     no_argument,       0, 'v'},
         {"help",        no_argument,       0, 'h'},
         {"source",      required_argument, 0, 's'},
         {"destination", required_argument, 0, 'd'},
         {"duplicates",  required_argument, 0, 'u'},
+        {"dateless",    required_argument, 0, 'l'},
         {0,             0,                 0, 0}
     };
 
     /* getopt_long stores the option index here. */
     int option_index = 0;
 
-    c = getopt_long (argc, argv, "vhs:d:u:", long_options, &option_index);
+    c = getopt_long (argc, argv, "vhs:d:u:l:", long_options, &option_index);
 
     /* Detect the end of the options. */
     if (c == -1)
@@ -56,6 +58,10 @@ const args_t* get_args (int argc, char **argv)
 
       case 'u':
         strcpy (args.dup_dir,optarg);
+      break;
+
+      case 'l':
+        strcpy (args.dateless_dir,optarg);
       break;
 
       case 'v':
@@ -93,6 +99,10 @@ void show_help(const char* app)
   printf("  -s, --source              The source directory containing photos\n");
   printf("  -d, --destination         The destination directory for photos\n");
   printf("  -u, --duplicates          The directory for holding duplicate photos\n");
+  printf("  -l, --dateless            The directory for holding dateless photos\n");
+  printf("  --nop                     Prints suggested operations (default); performs no writes to the file system\n");
+  printf("  --copy                    Copy files to destination; does not alter originals\n");
+  printf("  --move                    Move files to destination; deletes originals\n");
   printf("  -v, --version             Show the version number\n");
   printf("  -h, --help                Show this help\n");
 }

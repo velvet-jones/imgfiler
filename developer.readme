@@ -4,23 +4,12 @@ so stick to the following:
   - Do what the user expects
   - Run in read-only mode unless otherwise specified
   - Check error codes on function calls and process them
-  - Watch out for scenarios where you delete the only existing copy
+  - Use fstat:
+      - If two files have equal inode and device (st_ino/?), they refer to the same file on the file system
+      - If the file is a symbolic link, refuse to work with it.
 
-/*
- * A utility for filing photos based on the photo's metadata.
- *
- * 1. Get arguments:
- *     - source directory
- *     - destination directory/output format
- *     - duplicates directory (/dev/null to remove duplicates)
- *     - copy or move file?
- *     - verbose?
- * 2. Scan for image files
- * 3. Run sha checksum
- * 4. Copy or move to destination directory; if dest exists, move to duplicates directory
- * 5. Remove empty directories
- *
- * Notes:
- *      - Keep sequence numbers if possible so photos are in order
- *      - Group by user if possible (two users in different places on the same day)
-*/
+  -- Copy or move to destination directory; if dest exists, move to duplicates directory
+  -- Remove empty directories
+  -- Keep sequence numbers if possible so photos are in order
+  -- Group by user if possible (two users in different places on the same day)
+  -- accept uid, gid, umask for dst file; update it same file

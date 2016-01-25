@@ -1,3 +1,6 @@
+#ifndef INC_ARGS_H
+#define INC_ARGS_H
+
 #include <limits.h>
 
 #define OPERATION_COPY 0
@@ -15,3 +18,5 @@ typedef struct {
 
 const args_t* get_args (int argc, char **argv);
 void show_help();
+
+#endif // INC_ARGS_H

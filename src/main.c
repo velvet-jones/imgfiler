@@ -1,20 +1,5 @@
 /*
  * A utility for filing photos based on the photo's metadata.
- *
- * 1. Get arguments:
- *     - source directory
- *     - destination directory/output format
- *     - duplicates directory (/dev/null to remove duplicates)
- *     - copy or move file?
- *     - verbose?
- * 2. Scan for image files
- * 3. Run sha checksum
- * 4. Copy or move to destination directory; if dest exists, move to duplicates directory
- * 5. Remove empty directories
- *
- * Notes:
- *      - Keep sequence numbers if possible so photos are in order
- *      - Group by user if possible (two users in different places on the same day)
 */
 
 #include <stdlib.h>
@@ -24,13 +9,12 @@
 #include <limits.h>
 #include <string.h>
 #include "args.h"
+#include "exif.h"
+#include "sha.h"
 #include "common.h"
-#include <libexif/exif-data.h>
 
 void process_dir (const char* dir);
-void process_file (const char* fqpn);
-void trim_spaces(char *buf);
-void show_tag(ExifData *d, ExifIfd ifd, ExifTag tag);
+void process_file (const char* dir, const char* name, const char* fqpn);
 
 counters_t counters;
 
@@ -61,58 +45,45 @@ int main (int argc, char **argv)
   return 0;
 }
 
-/* Remove spaces on the right of the string */
-void trim_spaces(char* buf)
+void process_file (const char* dir, const char* name, const char* fqpn)
 {
-  char* s = buf-1;
-  for (; *buf; ++buf) {
-    if (*buf != ' ')
-      s = buf;
-  }
-  *++s = 0; /* nul terminate the string on the first of the final spaces */
-}
+  char date[1024];
+  memset (&date,0,sizeof(date));
 
-/* Show the tag name and contents if the tag exists */
-void show_tag(ExifData* d, ExifIfd ifd, ExifTag tag)
-{
-  /* See if this tag exists */
-  ExifEntry *entry = exif_content_get_entry(d->ifd[ifd],tag);
-  if (entry) {
-    char buf[1024];
-    /* Get the contents of the tag in human-readable form */
-    exif_entry_get_value(entry, buf, sizeof(buf));
-    /* Don't bother printing it if it's entirely blank */
-    trim_spaces(buf);
-    if (*buf) {
-      printf("%s: %s\n", exif_tag_get_name_in_ifd(tag,ifd), buf);
+  if (exif_date (fqpn,date))
+  {
+    char dst[PATH_MAX];
+    memset (dst,0,sizeof(dst));
+
+    // time_t t = convert_exif_date (buf);
+
+    struct stat st_src;
+    int ret = stat(fqpn,&st_src);
+    if (ret != 0)
+    {
+      fprintf (stderr,"Failed to stat source file '%s': %s.\n",fqpn,strerror (errno));
+      return;
     }
+
+    char mds[SHA1_SBUF_LEN];
+    if (compute_sha1(fqpn,mds))
+      printf ("%s  %s\n",mds,fqpn);
+
+    struct stat st_dst;
+    ret = stat(dst,&st_dst);
+    if (ret == 0) // dst file exists already - // FLAG: Does it have the same content??
+      if (!same_file (&st_src,&st_dst))
+      ;
+//        process_duplicate();
+      else
+      ;
+//        skip; // src=dst already
+    else
+    ;
+//      copy_or_move (fqpn,dst); // dst does not exist, perform operation
   }
   else
     counters.missing_date++;
-}
-
-void process_file (const char* fqpn)
-{
-  ExifData *ed;
-  ExifEntry *entry;
-
-  /* Load an ExifData object from an EXIF file */
-  ed = exif_data_new_from_file(fqpn);
-  if (!ed)
-  {
-    counters.missing_exif++;
-    return;  // no exif data in this file
-  }
-
-  show_tag(ed, EXIF_IFD_0, EXIF_TAG_DATE_TIME);
-  show_tag(ed, EXIF_IFD_EXIF, EXIF_TAG_DATE_TIME_ORIGINAL);
-
-//  show_tag(ed, EXIF_IFD_EXIF, EXIF_TAG_USER_COMMENT);
-//  show_tag(ed, EXIF_IFD_0, EXIF_TAG_IMAGE_DESCRIPTION);
-//  show_tag(ed, EXIF_IFD_1, EXIF_TAG_IMAGE_DESCRIPTION);
-
-  /* Free the EXIF data */
-  exif_data_unref(ed);
 }
 
 void process_dir (const char* dir)
@@ -121,7 +92,7 @@ void process_dir (const char* dir)
   d = opendir (dir);
 
   if (!d) {
-    fprintf (stderr, "Cannot open directory '%s': %s\n",dir,strerror (errno));
+    fprintf (stderr, "Failed to open directory '%s': %s.\n",dir,strerror (errno));
     exit (1);
   }
 
@@ -137,10 +108,6 @@ void process_dir (const char* dir)
     }
 
     d_name = entry->d_name;
-/*    if (!(entry->d_type & DT_DIR)) {
-      printf ("%s/%s\n", dir, d_name);
-    }
-*/
     int path_length;
     char path[PATH_MAX];
     path_length = snprintf (path, PATH_MAX,"%s/%s", dir, d_name);
@@ -161,12 +128,12 @@ void process_dir (const char* dir)
     // if it's a regular file...
     if (entry->d_type & DT_REG) {
       counters.total_files++;
-      process_file (path);
+      process_file (dir,d_name,path);
     }
   }
 
   if (closedir (d)) {
-    fprintf (stderr, "Failed to close '%s': %s\n", dir, strerror (errno));
+    fprintf (stderr, "Failed to close '%s': %s.\n", dir, strerror (errno));
     exit (1);
   }
 }

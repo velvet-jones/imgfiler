@@ -240,14 +240,11 @@ void set_sig_handlers ()
   sa.sa_handler = SIG_IGN;
 
   // handle signals
-  if (sigaction (SIGTTOU,&sa,0) < 0 ||     // in case there's a rogue cout down there somewhere, just ignore it
-      sigaction (SIGPIPE,&sa,0) < 0 ||     // ignored, taken care of at the socket level
-      sigaction (SIGHUP,&sa,0) < 0  ||      // ignore SIGHUP, we re-read on the fly anyway
-      sigaction (SIGUSR1,&sa,0) < 0 ||     // .. and the USR signals
-      sigaction (SIGUSR2,&sa,0) < 0 ||     // ..
-      sigaction (SIGINT,&sa,0) < 0  ||      // one handler for the main thread is explicily installed later
-      sigaction (SIGTERM,&sa,0) < 0 ||     // one handler for the main thread is explicily installed later
-      sigaction (SIGQUIT,&sa,0) < 0)       // one handler for the main thread is explicily installed later
+  if (sigaction (SIGTTOU,&sa,0) < 0 ||   // allow the app writes to stdout while running in the background
+      sigaction (SIGPIPE,&sa,0) < 0 ||   // libextractor requires this for its plugins
+      sigaction (SIGHUP,&sa,0) < 0  ||   // nothing to do for this
+      sigaction (SIGUSR1,&sa,0) < 0 ||   // .. or this
+      sigaction (SIGUSR2,&sa,0) < 0)     // ..or this
   {
     fprintf (stderr, "Failed to set signal masks.\n");
     exit (1);

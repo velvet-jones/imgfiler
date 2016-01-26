@@ -1,0 +1,18 @@
+Installing
+==========
+
+Prerequisites
+-------------
+- cmake version 2.6 or later
+- openssl devel package
+- extract devel package
+
+Compiling
+---------
+From the top-level directory:
+
+- mkdir build
+- cd build
+- cmake ..
+- make
+- make install

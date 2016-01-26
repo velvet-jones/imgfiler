@@ -1,3 +1,19 @@
+/* Copyright (C) Bud Millwood, 2016.
+
+   This program is free software: you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
+
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <getopt.h>
@@ -7,13 +23,17 @@
 
 static args_t args;
 
+void validate_args(const char* app, const args_t* args);
+void show_help();
+
 const args_t* get_args (int argc, char **argv)
 {
   memset (&args,0,sizeof(args_t));
 
   int c;
 
-  while (1) {
+  while (1)
+  {
     static struct option long_options[] = {
         {"verbose",     no_argument,       &args.verbose, 1},
         {"nop",         no_argument,       &args.operation, 0},
@@ -36,7 +56,8 @@ const args_t* get_args (int argc, char **argv)
     if (c == -1)
       break;
 
-    switch (c) {
+    switch (c)
+    {
       case 0:
         /* If this option set a flag, do nothing else now. */
         if (long_options[option_index].flag != 0)
@@ -78,7 +99,7 @@ const args_t* get_args (int argc, char **argv)
 
       default:
         abort();
-      }
+    }
   }
 
   /* Print any remaining command line arguments (not options). */
@@ -89,6 +110,8 @@ const args_t* get_args (int argc, char **argv)
       printf ("%s ", argv[optind++]);
     putchar ('\n');
   }
+
+  validate_args (argv[0],&args);
   return &args;
 }
 
@@ -103,4 +126,32 @@ void show_help(const char* app)
   printf("  --move                    Move files to destination\n");
   printf("  -v, --version             Show the version number\n");
   printf("  -h, --help                Show this help\n");
+}
+
+void validate_args(const char* app, const args_t* args)
+{
+  // if no dateless_dir, we just leave the original file as is
+  if (!*args->src_dir && !*args->dst_dir || !*args->dup_dir)
+  {
+    show_help(app);
+    exit(1);
+  }
+
+  if (!validate_dir(args->src_dir))
+  {
+    fprintf (stderr,"Source directory '%s' does not exist.\n",args->src_dir);
+    exit (1);
+  }
+
+  if (!validate_dir(args->dst_dir))
+  {
+    fprintf (stderr,"Destination directory '%s' does not exist.\n",args->dst_dir);
+    exit (1);
+  }
+
+  if (!validate_dir(args->dup_dir))
+  {
+    fprintf (stderr,"Duplicates directory '%s' does not exist.\n",args->dup_dir);
+    exit (1);
+  }
 }

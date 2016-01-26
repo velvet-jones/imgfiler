@@ -1,3 +1,19 @@
+/* Copyright (C) Bud Millwood, 2016.
+
+   This program is free software: you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
+
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 #include "common.h"
 #include <errno.h>
 #include <dirent.h>
@@ -33,6 +49,24 @@ bool to_long (const char* s, long* l)
     return false;
   else
     return true;
+}
+
+const char* get_extension (const char* fqpn)
+{
+  // find last slash character; if it exists, start after that
+  const char* begin = fqpn;
+  const char* slash = strrchr (fqpn,'/');
+  if (slash)
+    begin = slash+1;
+
+  // find the last dot character
+  const char* dot = strrchr (begin,'.');
+
+  // if the file name started with a dot, there is no extension
+  if (!dot || dot == begin)
+    return &fqpn[strlen(fqpn)];  // returns the null terminator only
+  else
+    return dot;  // returns extension preceded by dot
 }
 
 // check if a directory exists

@@ -5,9 +5,9 @@ set (TARGET_NAME imgfiler)
 file (GLOB folder_SOURCES *.c)
 file (GLOB folder_HEADERS *.h)
 
-find_package (EXIF REQUIRED)
+find_package (Extractor REQUIRED)
 find_package (OpenSSL REQUIRED)
 
 add_executable(${TARGET_NAME} ${folder_SOURCES} ${folder_HEADERS})
 
-target_link_libraries (${TARGET_NAME} ${EXIF_LIBRARY} ${OPENSSL_LIBRARIES})
+target_link_libraries (${TARGET_NAME} ${EXTRACTOR_LIBRARY} ${OPENSSL_LIBRARIES})

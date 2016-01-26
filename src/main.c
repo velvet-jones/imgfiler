@@ -8,13 +8,11 @@
 #include <dirent.h>
 #include <limits.h>
 #include <string.h>
-#include <time.h>
 
 #include "main.h"
 #include "args.h"
-#include "exif.h"
+#include "extract.h"
 #include "sha.h"
-#include "common.h"
 
 counters_t counters;
 const args_t* args = 0;
@@ -32,14 +30,39 @@ int main (int argc, char **argv)
     exit(1);
   }
 
+  if (!validate_dir(args->src_dir))
+  {
+    fprintf (stderr,"Source directory '%s' does not exist.\n",args->src_dir);
+    exit (1);
+  }
+
+  if (!validate_dir(args->dst_dir))
+  {
+    fprintf (stderr,"Destination directory '%s' does not exist.\n",args->dst_dir);
+    exit (1);
+  }
+
+  if (!validate_dir(args->dup_dir))
+  {
+    fprintf (stderr,"Duplicates directory '%s' does not exist.\n",args->dup_dir);
+    exit (1);
+  }
+
+  if (!init_extractor())
+  {
+    fprintf (stderr,"Failed to initialize the extractor.\n");
+    exit (1);
+  }
+
   process_dir (args->src_dir);
+  close_extractor();
 
   if (args->verbose)
   {
     printf ("Total files: %ld\n",counters.total_files);
     printf ("Total dirs: %ld\n",counters.total_dirs);
-    printf ("With date: %ld\n",counters.total_files-counters.missing_exif_date);
-    printf ("Without date: %ld\n",counters.missing_exif_date);
+    printf ("With date: %ld\n",counters.total_files-counters.missing_date);
+    printf ("Without date: %ld\n",counters.missing_date);
     printf ("Duplicates: %ld\n",counters.duplicates);
   }
   return 0;
@@ -48,55 +71,40 @@ int main (int argc, char **argv)
 // handles dateless, duplicates and normal destination
 void process_operation(const char* src_fqpn, const char* dst_dir, const char* dst_name)
 {
-//  snprintf (dst_fqpn, PATH_MAX,"%s/%s", dir, dst_name);
+  char dst_fqpn[PATH_MAX];
+
+  if (strlen(dst_dir) == 0)
+  {
+    if (args->verbose)
+      printf ("Skipping dateless file %s; no dateless directory specified.\n",src_fqpn);
+    return;  // do nothing if there is no destination directory defined (dateless can be empty)
+  }
 
   switch (args->operation)
   {
-    case OPERATION_NOP:
-      printf ("Suggest copy/move %s -> %s/%s\n",src_fqpn,dst_dir,dst_name);
-    break;
-
-    case OPERATION_COPY:
-      printf ("Copy %s -> %s/%s\n",src_fqpn,dst_dir,dst_name);
+    case OPERATION_NOP: // simply suggest what we would do
+      printf ("Suggest move %s -> %s/%s\n",src_fqpn,dst_dir,dst_name);
     break;
 
     case OPERATION_MOVE:
-      printf ("Move %s -> %s/%s\n",src_fqpn,dst_dir,dst_name);
+      if (!create_directory_if (dst_dir))
+      {
+        fprintf (stderr,"Failed to create directory '%s': %s.\n",dst_dir,strerror (errno));
+        return;
+      }
+      snprintf (dst_fqpn,PATH_MAX,"%s/%s",dst_dir,dst_name);
+      // fails gracefully if the two are not on the same file system
+      if (rename (src_fqpn,dst_fqpn) != 0)
+        fprintf (stderr,"Failed to move %s -> %s: %s.\n",src_fqpn,dst_fqpn,strerror (errno));
     break;
   }
 }
 
-bool to_long (const char* s, long* l)
-{
-  char dummy = '\0';
-  char* lastValid = &dummy;
-  errno = 0;  // we must use errno, since we have to set it to 0 before calling strtoul
-  *l = strtoul (s,&lastValid,10);
-
-  if (!lastValid || *lastValid != 0 || errno != 0)
-    return false;
-  else
-    return true;
-}
-
-bool format_dst (const char* base_dir, const char* date, const char* dst_name, char* dst_dir, char* dst_fqpn)
+bool format_dst (const char* base_dir, const date_t* date, const char* dst_name, char* dst_dir, char* dst_fqpn)
 {
   memset (dst_dir,0,PATH_MAX);
-  struct tm ft;
 
-  // exif date format is 'YYYY:MM:DD HH:MM:SS'
-  if (sscanf(date, "%d:%d:%d %d:%d:%d",&ft.tm_year,&ft.tm_mon,&ft.tm_mday,&ft.tm_hour,&ft.tm_min,&ft.tm_sec) != 6)
-    return false;
-
-  /* Uncomment the following to make the struct tm valid*/
-//  ft.tm_isdst = -1;  // no dst data available
-//  ft.tm_mon -= 1;    // zero-based months
-//  ft.tm_year -= 1900;  // years are offset from 1900
-
-  if (!ft.tm_year || !ft.tm_mon || !ft.tm_mday)
-    return false;
-
-  snprintf (dst_dir,PATH_MAX-1,"%s/%04u/%02u-%02u",base_dir,ft.tm_year,ft.tm_mon,ft.tm_mday);
+  snprintf (dst_dir,PATH_MAX-1,"%s/%04u/%02u-%02u",base_dir,date->tm.tm_year+1900,date->tm.tm_mon+1,date->tm.tm_mday);
   snprintf (dst_fqpn,PATH_MAX-1,"%s/%s",dst_dir,dst_name);
   return true;
 }
@@ -108,52 +116,51 @@ void process_file (const char* src_dir, const char* src_name, const char* src_fq
   if (!compute_sha1(src_fqpn,dst_name))
     return;
 
-  // now attempt to get an exif date
-  char date[1024];
-  memset (&date,0,sizeof(date));
-
-  if (exif_date (src_fqpn,date,sizeof(date)))
+  // now attempt to get 'date' metadata from the file
+  date_t date;
+  if (!extract_date (src_fqpn,&date))
   {
-    // format a destination dir and fqpn
-    char dst_dir[PATH_MAX];
-    char dst_fqpn[PATH_MAX];
-    if (!format_dst (args->dst_dir,date,dst_name,dst_dir,dst_fqpn))
-    {
-      fprintf (stderr,"Invalid date format '%s' in file %s.\n",date,src_fqpn);
-      return;
-    }
+    // no date; send this file to the dateless dir
+    process_operation (src_fqpn,args->dateless_dir,dst_name);
+    counters.missing_date++;
+    return;
+  }
 
-    struct stat st_src;
-    int ret = stat(src_fqpn,&st_src);
-    if (ret != 0)
-    {
-      fprintf (stderr,"Failed to stat source file %s: %s.\n",src_fqpn,strerror (errno));
-      return;
-    }
+  // format a destination dir and fqpn
+  char dst_dir[PATH_MAX];
+  char dst_fqpn[PATH_MAX];
+  if (!format_dst (args->dst_dir,&date,dst_name,dst_dir,dst_fqpn))
+  {
+    // no date; send this file to the dateless dir
+    process_operation (src_fqpn,args->dateless_dir,dst_name);
+    counters.missing_date++;  // date format is incorrect
+    return;
+  }
 
-    struct stat st_dst;
-    ret = stat(dst_fqpn,&st_dst);
-    if (ret == 0) // dst file exists already - // FLAG: Does it have the same content??
-    {
-      if (!same_file (&st_src,&st_dst))
-        process_operation(src_fqpn,args->dup_dir,dst_name);  // send file to dup dir
-      else
-      {
-        if (args->verbose)
-          printf ("Nothing to do for %s.\n",src_fqpn);
-      }
-    }
+  struct stat st_src;
+  int ret = stat(src_fqpn,&st_src);
+  if (ret != 0)
+  {
+    fprintf (stderr,"Failed to stat source file %s: %s.\n",src_fqpn,strerror (errno));
+    return;
+  }
+
+  struct stat st_dst;
+  ret = stat(dst_fqpn,&st_dst);
+  if (ret == 0) // dst file exists already - // FLAG: Does it have the same content??
+  {
+    if (!same_file (&st_src,&st_dst))
+      process_operation(src_fqpn,args->dup_dir,dst_name);  // send file to dup dir
     else
     {
-      // Could not stat dst, file does not exist
-      process_operation (src_fqpn,dst_dir,dst_name); // send file to formatted dst_dir
+      if (args->verbose)
+        printf ("Nothing to do for %s.\n",src_fqpn);
     }
   }
   else
   {
-    // no exif date; send this file to the dateless dir
-    process_operation (src_fqpn,args->dateless_dir,dst_name);
-    counters.missing_exif_date++;
+    // Could not stat dst, file does not exist
+    process_operation (src_fqpn,dst_dir,dst_name); // send file to formatted dst_dir
   }
 }
 
@@ -192,14 +199,26 @@ void process_dir (const char* dir)
         }
 
         // recursively process this directory
-        process_dir (path);
+        if (d_name[0] != '.')  // we ignore hidden directories
+          process_dir (path);
+        else
+        {
+          if (args->verbose)
+            printf ("Skipping hidden directory %s.\n",path);
+        }
       }
     }
 
     // if it's a regular file...
     if (entry->d_type & DT_REG) {
       counters.total_files++;
-      process_file (dir,d_name,path);
+      if (d_name[0] != '.')  // we ignore hidden files
+        process_file (dir,d_name,path);
+      else
+      {
+        if (args->verbose)
+          printf ("Skipping hidden file %s.\n",path);
+      }
     }
   }
 

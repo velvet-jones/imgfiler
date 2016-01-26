@@ -17,8 +17,7 @@ const args_t* get_args (int argc, char **argv)
     static struct option long_options[] = {
         {"verbose",     no_argument,       &args.verbose, 1},
         {"nop",         no_argument,       &args.operation, 0},
-        {"copy",        no_argument,       &args.operation, 1},
-        {"move",        no_argument,       &args.operation, 2},
+        {"move",        no_argument,       &args.operation, 1},
         {"version",     no_argument,       0, 'v'},
         {"help",        no_argument,       0, 'h'},
         {"source",      required_argument, 0, 's'},
@@ -99,10 +98,9 @@ void show_help(const char* app)
   printf("  -s, --source              The source directory containing photos\n");
   printf("  -d, --destination         The destination directory for photos\n");
   printf("  -u, --duplicates          The directory for holding duplicate photos\n");
-  printf("  -l, --dateless            The directory for holding dateless photos\n");
+  printf("  -l, --dateless            If provided, dateless photos will be moved into this directory\n");
   printf("  --nop                     Prints suggested operations (default); performs no writes to the file system\n");
-  printf("  --copy                    Copy files to destination; does not alter originals\n");
-  printf("  --move                    Move files to destination; deletes originals\n");
+  printf("  --move                    Move files to destination\n");
   printf("  -v, --version             Show the version number\n");
   printf("  -h, --help                Show this help\n");
 }

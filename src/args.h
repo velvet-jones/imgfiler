@@ -4,8 +4,7 @@
 #include <limits.h>
 
 #define OPERATION_NOP  0
-#define OPERATION_COPY 1
-#define OPERATION_MOVE 2
+#define OPERATION_MOVE 1
 
 typedef struct {
   char  src_dir[PATH_MAX];      // source dir

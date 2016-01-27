@@ -86,6 +86,7 @@ const args_t* get_args (int argc, char **argv)
 
       case 'v':
         printf ("%s\n",APP_VERSION);
+        exit(0);
       break;
 
       case 'h':

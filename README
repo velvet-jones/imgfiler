@@ -1,6 +1,8 @@
 Image Filer
 ===========
-A utility for organizing digital photos
+A utility for organizing digital photos.
+
++Copyright (C) 2016 Bud Millwood<bud.millwood@gmail.com>+
 
 This program re-organizes your digital photos by moving them
 into a directory based on the date the photo was taken.

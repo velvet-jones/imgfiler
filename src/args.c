@@ -36,7 +36,6 @@ const args_t* get_args (int argc, char **argv)
   {
     static struct option long_options[] = {
         {"verbose",     no_argument,       &args.verbose, 1},
-        {"nop",         no_argument,       &args.operation, 0},
         {"move",        no_argument,       &args.operation, 1},
         {"version",     no_argument,       0, 'v'},
         {"help",        no_argument,       0, 'h'},
@@ -102,6 +101,10 @@ const args_t* get_args (int argc, char **argv)
     }
   }
 
+  // if performing a dry run (default), be verbose
+  if (args.operation == OPERATION_NOP)
+    args.verbose = 1;
+
   /* Print any remaining command line arguments (not options). */
   if (optind < argc)
   {
@@ -110,6 +113,11 @@ const args_t* get_args (int argc, char **argv)
       printf ("%s ", argv[optind++]);
     putchar ('\n');
   }
+
+  right_trim (args.src_dir,'/');
+  right_trim (args.dst_dir,'/');
+  right_trim (args.dup_dir,'/');
+  right_trim (args.dateless_dir,'/');
 
   validate_args (argv[0],&args);
   return &args;
@@ -120,18 +128,19 @@ void show_help(const char* app)
   printf("Usage: %s [OPTIONS]\n", app);
   printf("  -s, --source              The source directory containing photos\n");
   printf("  -d, --destination         The destination directory for photos\n");
-  printf("  -u, --duplicates          The directory for holding duplicate photos\n");
-  printf("  -l, --dateless            If provided, dateless photos will be moved into this directory\n");
-  printf("  --nop                     Prints suggested operations (default); performs no writes to the file system\n");
-  printf("  --move                    Move files to destination\n");
+  printf("  -u, --duplicates          If provided, holds duplicates; otherwise duplicate files are deleted\n");
+  printf("  -l, --dateless            If provided, holds dateless; otherwise dateless files are skipped\n");
+  printf("  --move                    Default behavior suggests only; use this to perform the operations\n");
   printf("  -v, --version             Show the version number\n");
   printf("  -h, --help                Show this help\n");
 }
 
 void validate_args(const char* app, const args_t* args)
 {
-  // if no dateless_dir, we just leave the original file as is
-  if (!*args->src_dir && !*args->dst_dir || !*args->dup_dir)
+  /* If no dateless_dir, we just leave the original file as is.
+     If no duplicates dir, we delete the source file. (Otherwise we move it to the dup dir)
+  */
+  if (!*args->src_dir && !*args->dst_dir)
   {
     show_help(app);
     exit(1);
@@ -149,9 +158,15 @@ void validate_args(const char* app, const args_t* args)
     exit (1);
   }
 
-  if (!validate_dir(args->dup_dir))
+  if (*args->dup_dir != 0 && !validate_dir(args->dup_dir))
   {
     fprintf (stderr,"Duplicates directory '%s' does not exist.\n",args->dup_dir);
+    exit (1);
+  }
+
+  if (*args->dateless_dir != 0 && !validate_dir(args->dateless_dir))
+  {
+    fprintf (stderr,"Dateless directory '%s' does not exist.\n",args->dateless_dir);
     exit (1);
   }
 }

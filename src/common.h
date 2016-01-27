@@ -37,7 +37,11 @@ typedef struct {
   bool        valid; // false if 'date' is invalid
 } date_t;
 
-void right_trim (char* buf);
+void right_trim (char* buf, char c);
+bool is7BitAscii (const char* s);
+const char* contains (const char* s, char c);
+const char* read_integer (const char* buf,const char* delimiters,int max_chars,int* result);
+const char* read_long (const char* buf,const char* delimiters,int max_chars,long* result);
 bool same_file (struct stat* st1, struct stat* st2);
 bool to_long (const char* s, long* l);
 const char* get_extension (const char* fqpn);

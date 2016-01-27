@@ -20,14 +20,97 @@
 #include <string.h>
 
 // trim whitespace on right
-void right_trim(char* buf)
+void right_trim(char* buf, char c)
 {
   char* s = buf-1;
   for (; *buf; ++buf) {
-    if (*buf != ' ')
+    if (*buf != c)
       s = buf;
   }
   *++s = 0; /* nul terminate the string on the first of the final spaces */
+}
+
+bool is7BitAscii (const char* s)
+{
+  const char* p = s;
+  while (*p != 0)
+  {
+    if (*p & 0x80)
+      return false;
+    p++;
+  }
+  return true;
+}
+
+const char* contains (const char* s, char c)
+{
+  const char* p = s;
+  while (*p != 0)
+  {
+    if (*p == c)
+      return p;
+    p++;
+  }
+  return 0;
+}
+
+/* Read 'max_chars' into 'buf', then convert that to an integer. Return null if
+   the number fails to convert. Always stop reading at any character found in
+   'delimiters'. If no delimiter is found within max_chars, check the next character.
+   If it's in 'delimiters', skip it, and return that pointer.
+*/
+const char* read_integer (const char* s,const char* delimiters,int max_chars,int* result)
+{
+  long l = 0;
+  const char* ret = read_long (s,delimiters,max_chars,&l);
+  if (ret != 0)
+    *result = (int)l;
+  return ret;
+}
+
+const char* read_long (const char* s,const char* delimiters,int max_chars,long* result)
+{
+  char tmp[100];
+  memset (tmp,0,sizeof(tmp));
+
+  if (max_chars > sizeof(tmp)-1)
+    return 0;
+
+  const char* p = s;
+  const char* delim = 0;
+  while (*p != 0)
+  {
+    max_chars--;
+    if (max_chars < 0)
+      break;
+
+    delim = contains (delimiters,*p);
+    if (delim)
+      break;
+    p++;
+  }
+
+  // if max_chars < 0, we stopped because we ran out of characters to check
+  // if delim != 0, we stopped because we found a delimiter
+  // otherwise, we stopped because we hit the end of the string
+
+  int length = p-s;
+  if (delim)    // subtract any delimiter from the length of the string to copy
+    length--;
+
+  if (length > 0)
+  {
+    strncpy (tmp,s,length);
+    if (!to_long (tmp,result))
+      return 0;
+
+    if (*p != 0 && (delim || max_chars < 0))
+      p++;  // skip either the delimiter or just move to the next char
+
+    return p;
+  }
+  else
+    return 0;  // we failed to read a number
 }
 
 // check if two files are actually the same file on disk (not content - the *same file*)
@@ -43,12 +126,13 @@ bool to_long (const char* s, long* l)
   char dummy = '\0';
   char* lastValid = &dummy;
   errno = 0;  // we must use errno, since we have to set it to 0 before calling strtoul
-  *l = strtoul (s,&lastValid,10);
+  long tmp = strtoul (s,&lastValid,10);
 
   if (!lastValid || *lastValid != 0 || errno != 0)
     return false;
-  else
-    return true;
+
+  *l = tmp;
+  return true;
 }
 
 const char* get_extension (const char* fqpn)

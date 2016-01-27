@@ -12,3 +12,5 @@ find_package (OpenSSL REQUIRED)
 add_executable(${TARGET_NAME} ${folder_SOURCES} ${folder_HEADERS})
 
 target_link_libraries (${TARGET_NAME} ${EXIF_LIBRARY} ${EXTRACTOR_LIBRARY} ${OPENSSL_LIBRARIES})
+
+install(TARGETS ${TARGET_NAME} DESTINATION bin)

@@ -20,8 +20,9 @@
 #include <stdio.h>
 
 void get_tag(ExifData* d, ExifIfd ifd, ExifTag tag, char* buf, int len);
+ExifData* load_file (file_t* file);
 
-bool exif_date (const char* fqpn, date_t* date)
+bool exif_date (file_t* file, date_t* date)
 {
   ExifData *ed;
 //  ExifEntry *entry;
@@ -29,11 +30,9 @@ bool exif_date (const char* fqpn, date_t* date)
   memset (data,0,sizeof(data));
 
   /* Load an ExifData object from an EXIF file */
-  ed = exif_data_new_from_file(fqpn);
+  ed = load_file(file);
   if (!ed)
-  {
     return false;  // no exif data in this file
-  }
 
   get_tag(ed, EXIF_IFD_EXIF, EXIF_TAG_DATE_TIME_ORIGINAL,data,sizeof(data));  // EXIF tag 0x9003, DateTimeOriginal
   if (*data != 0 && read_yyyymmdd (data,date))
@@ -58,8 +57,6 @@ bool exif_date (const char* fqpn, date_t* date)
     return true;
   }
 
-// 0x82aa MDPrepDate
-
   exif_data_unref(ed);
 
   return false;
@@ -73,4 +70,13 @@ void get_tag(ExifData* d, ExifIfd ifd, ExifTag tag, char* buf, int len)
     exif_entry_get_value(entry, buf, len);
     right_trim(buf,' ');
   }
+}
+
+ExifData* load_file (file_t* file)
+{
+  ExifData* ed = exif_data_new ();
+  exif_data_unset_option (ed, EXIF_DATA_OPTION_FOLLOW_SPECIFICATION);
+  exif_data_set_option (ed, EXIF_DATA_OPTION_IGNORE_UNKNOWN_TAGS);
+  exif_data_load_data (ed, file->addr, file->st.st_size);
+  return ed;
 }

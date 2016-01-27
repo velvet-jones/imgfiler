@@ -21,8 +21,8 @@ All setting are provided on the command line. There is no configuration file.
              skip dateless photos.
 
 --duplicates:: Optional. If supplied, the program moves photos that are duplicates
-               into this directory. Without a 'duplicates' directory duplicate
-               photos are deleted.
+               into this directory. Without a 'duplicates' directory the program
+               will delete duplicate photos.
 
 --md5:: Use MD5 instead of SHA1 for hashing.
 

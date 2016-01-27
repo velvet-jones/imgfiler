@@ -59,46 +59,53 @@ int main (int argc, char **argv)
   return 0;
 }
 
-void perform_delete_src(const char* src_fqpn, const char* src_sha, const char* dst_fqpn)
+void perform_delete_src(file_t* src_file, const char* dst_fqpn)
 {
-  char dst_sha[PATH_MAX];
+  file_t* dst_file = 0;
 
   switch (args->operation)
   {
     case OPERATION_NOP: // simply suggest what we would do
-      printf ("Suggest delete %s, duplicate of %s\n",src_fqpn,dst_fqpn);
+      printf ("Suggest delete %s, duplicate of %s\n",src_file->fqpn,dst_fqpn);
     break;
 
     case OPERATION_MOVE:
       if (args->verbose)
-        printf ("Delete %s, duplicate of %s\n",src_fqpn,dst_fqpn);
+        printf ("Delete %s, duplicate of %s\n",src_file->fqpn,dst_fqpn);
 
-      if (!compute_hash(args,dst_fqpn,dst_sha,sizeof(dst_sha)))
+      dst_file = map_file (dst_fqpn);
+      if (!dst_file)
       {
-        fprintf (stderr,"Failed to compute hash for %s: %s.\n",dst_fqpn,strerror (errno));
+        fprintf (stderr,"Failed to open file %s: %s.\n",dst_fqpn,strerror (errno));
         return;
       }
 
-      if (strcmp (src_sha,dst_sha) != 0)
+      if (!compute_hash(args,dst_file))
       {
-        fprintf (stderr,"Refusing to delete: %s != %s!\n",src_fqpn,dst_fqpn);
+        fprintf (stderr,"Failed to compute hash for %s: %s.\n",dst_file->fqpn,strerror (errno));
         return;
       }
-      if (unlink (src_fqpn) != 0)
-        fprintf (stderr,"Failed to delete %s: %s.\n",src_fqpn,strerror (errno));
+
+      if (strcmp (src_file->hash,dst_file->hash) != 0)
+      {
+        fprintf (stderr,"Refusing to delete: %s != %s!\n",src_file->fqpn,dst_file->fqpn);
+        return;
+      }
+      if (unlink (src_file->fqpn) != 0)
+        fprintf (stderr,"Failed to delete %s: %s.\n",src_file->fqpn,strerror (errno));
     break;
   }
 }
 
 // handles dateless, duplicates and normal destination
-void perform_move_src(const char* src_fqpn, const char* dst_dir, const char* dst_name)
+void perform_move_src(file_t* src_file, const char* dst_dir)
 {
   char dst_fqpn[PATH_MAX];
 
   switch (args->operation)
   {
     case OPERATION_NOP: // simply suggest what we would do
-      printf ("Suggest move %s -> %s/%s\n",src_fqpn,dst_dir,dst_name);
+      printf ("Suggest move %s -> %s/%s\n",src_file->fqpn,dst_dir,src_file->hash);
     break;
 
     case OPERATION_MOVE:
@@ -107,14 +114,14 @@ void perform_move_src(const char* src_fqpn, const char* dst_dir, const char* dst
         fprintf (stderr,"Failed to create directory %s: %s.\n",dst_dir,strerror (errno));
         return;
       }
-      snprintf (dst_fqpn,PATH_MAX,"%s/%s",dst_dir,dst_name);
+      snprintf (dst_fqpn,PATH_MAX,"%s/%s",dst_dir,src_file->hash);
 
       if (args->verbose)
-        printf ("Move %s -> %s\n",src_fqpn,dst_fqpn);
+        printf ("Move %s -> %s\n",src_file->fqpn,dst_fqpn);
 
       // fails gracefully if the two are not on the same file system
-      if (rename (src_fqpn,dst_fqpn) != 0)
-        fprintf (stderr,"Failed to move %s -> %s: %s.\n",src_fqpn,dst_fqpn,strerror (errno));
+      if (rename (src_file->fqpn,dst_fqpn) != 0)
+        fprintf (stderr,"Failed to move %s -> %s: %s.\n",src_file->fqpn,dst_fqpn,strerror (errno));
     break;
   }
 }
@@ -128,31 +135,30 @@ bool format_dst (const char* base_dir, const date_t* date, const char* dst_name,
   return true;
 }
 
-void process_file (const char* src_dir, const char* src_name, const char* src_fqpn)
+void process_file (file_t* src_file)
 {
 //  if (args->verbose)
 //    printf ("Processing file %s.\n",src_fqpn);
 
-  // first compute the hash of the source file
-  char dst_name[PATH_MAX];
-  if (!compute_hash(args,src_fqpn,dst_name,sizeof(dst_name)))
+  // compute the hash of the source file
+  if (!compute_hash(args,src_file))
   {
-    fprintf (stderr,"Failed to compute hash for %s: %s.\n",src_fqpn,strerror (errno));
+    fprintf (stderr,"Failed to compute hash for %s: %s.\n",src_file->fqpn,strerror (errno));
     return;
   }
 
   // now attempt to get 'date' metadata from the file
   date_t date;
-  if (!extract_date (src_fqpn,&date) && !exif_date (src_fqpn,&date))
+  if (!exif_date (src_file,&date) && !extract_date (src_file->fqpn,&date))
   {
     // no date; send this file to the dateless dir
     if (*args->dateless_dir == 0)
     {
       if (args->verbose)
-        printf ("Skipping dateless file %s; no dateless directory specified.\n",src_fqpn);
+        printf ("Skipping dateless file %s; no dateless directory specified.\n",src_file->fqpn);
       return;
     }
-    perform_move_src (src_fqpn,args->dateless_dir,dst_name);
+    perform_move_src (src_file,args->dateless_dir);
     counters.missing_date++;
     return;
   }
@@ -160,43 +166,35 @@ void process_file (const char* src_dir, const char* src_name, const char* src_fq
   // format a destination dir and fqpn
   char dst_dir[PATH_MAX];
   char dst_fqpn[PATH_MAX];
-  if (!format_dst (args->dst_dir,&date,dst_name,dst_dir,dst_fqpn))
+  if (!format_dst (args->dst_dir,&date,src_file->hash,dst_dir,dst_fqpn))
   {
     if (*args->dateless_dir == 0)
     {
       if (args->verbose)
-        printf ("Skipping dateless file %s; no dateless directory specified.\n",src_fqpn);
+        printf ("Skipping dateless file %s; no dateless directory specified.\n",src_file->fqpn);
       return;
     }
     // no valid date; send this file to the dateless dir
-    perform_move_src (src_fqpn,args->dateless_dir,dst_name);
+    perform_move_src (src_file,args->dateless_dir);
     counters.missing_date++;  // date format is incorrect
     return;
   }
 
-  struct stat st_src;
-  int ret = stat(src_fqpn,&st_src);
-  if (ret != 0)
-  {
-    fprintf (stderr,"Failed to stat source file %s: %s.\n",src_fqpn,strerror (errno));
-    return;
-  }
-
   struct stat st_dst;
-  ret = stat(dst_fqpn,&st_dst);
+  int ret = stat(dst_fqpn,&st_dst);
   if (ret == 0) // dst file exists already
   {
-    if (!same_file (&st_src,&st_dst))
+    if (!same_file (&src_file->st,&st_dst))
     {
       if (*args->dup_dir == 0)
-        perform_delete_src (src_fqpn,dst_name,dst_fqpn);
+        perform_delete_src (src_file,dst_fqpn);
       else
-        perform_move_src(src_fqpn,args->dup_dir,dst_name);  // send file to dup dir; what if it already exists here? has diff content?
+        perform_move_src(src_file,args->dup_dir);  // send file to dup dir; what if it already exists here? has diff content?
     }
     else
     {
       if (args->verbose)
-        printf ("Nothing to do for %s.\n",src_fqpn);
+        printf ("Nothing to do for %s.\n",src_file->fqpn);
     }
   }
   else
@@ -205,7 +203,7 @@ void process_file (const char* src_dir, const char* src_name, const char* src_fq
     if (err == ENOENT || err == ENOTDIR)
     {
       // destination file doesn't exist, move the source file to the destination file
-      perform_move_src (src_fqpn,dst_dir,dst_name);
+      perform_move_src (src_file,dst_dir);
     }
     else
     {
@@ -269,7 +267,17 @@ void process_dir (const char* dir)
     {
       counters.total_files++;
       if (d_name[0] != '.')  // we ignore hidden files
-        process_file (dir,d_name,path);
+      {
+        // map the file
+        file_t* src_file = map_file (path);
+        if (src_file)
+        {
+          process_file (src_file);
+          unmap_file (src_file);
+        }
+        else
+          fprintf (stderr,"Failed to open file %s: %s.\n",path,strerror (errno));
+      }
       else
       {
         if (args->verbose)

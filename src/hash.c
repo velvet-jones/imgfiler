@@ -19,54 +19,33 @@
 #include "hash.h"
 #include "common.h"
 #include <stdio.h>
-#include <errno.h>
+//#include <errno.h>
 #include <string.h>
 
-unsigned char io_buf[_READ_BUF_SIZE];
-
-bool compute_hash (const args_t* args,const char* fqpn, char* dst_name, int name_len)
+bool compute_hash (const args_t* args, file_t* file)
 {
   switch (args->hash)
   {
     case HASH_SHA:
-      return compute_sha1(fqpn, dst_name, name_len);
+      return compute_sha1(file);
     break;
 
     case HASH_MD5:
-      return compute_md5(fqpn, dst_name, name_len);
+      return compute_md5(file);
     break;
   }
   return false;
 }
 
 // outputs dst_name, the string representation of the file's sha1
-bool compute_sha1(const char* fqpn, char* dst_name, int name_len)
+bool compute_sha1(file_t* file)
 {
   SHA_CTX context;
   if(!SHA1_Init(&context))
     return false;
 
-  FILE* f = fopen (fqpn,"rb");
-  if (!f)
+  if (!SHA1_Update(&context, file->addr, file->st.st_size))
     return false;
-
-  size_t len = 0;
-  do
-  {
-    len = fread(io_buf, sizeof(char), _READ_BUF_SIZE, f);
-    if (ferror(f) || !SHA1_Update(&context, io_buf, len))
-    {
-      fclose (f);
-      return false;
-    }
-
-    if (feof (f))
-    {
-      fclose(f);
-      break;
-    }
-  }
-  while (1);
 
   unsigned char md[SHA_DIGEST_LENGTH];
   if(!SHA1_Final(md, &context))
@@ -74,40 +53,21 @@ bool compute_sha1(const char* fqpn, char* dst_name, int name_len)
 
   int i = 0;
   for (; i < SHA_DIGEST_LENGTH; i++)
-    sprintf(&dst_name[i*2], "%02x", (unsigned int)md[i]);
+    sprintf(&file->hash[i*2], "%02x", (unsigned int)md[i]);
 
-  strcpy (&dst_name[i*2],get_extension(fqpn));
+  strcpy (&file->hash[i*2],get_extension(file->fqpn));
   return true;
 }
 
 // outputs dst_name, the string representation of the file's md5
-bool compute_md5(const char* fqpn, char* dst_name, int name_len)
+bool compute_md5(file_t* file)
 {
   MD5_CTX context;
   if(!MD5_Init(&context))
     return false;
 
-  FILE* f = fopen (fqpn,"rb");
-  if (!f)
+  if (!MD5_Update(&context, file->addr, file->st.st_size))
     return false;
-
-  size_t len = 0;
-  do
-  {
-    len = fread(io_buf, sizeof(char), _READ_BUF_SIZE, f);
-    if (ferror(f) || !MD5_Update(&context, io_buf, len))
-    {
-      fclose (f);
-      return false;
-    }
-
-    if (feof (f))
-    {
-      fclose(f);
-      break;
-    }
-  }
-  while (1);
 
   unsigned char md[MD5_DIGEST_LENGTH];
   if(!MD5_Final(md, &context))
@@ -115,8 +75,8 @@ bool compute_md5(const char* fqpn, char* dst_name, int name_len)
 
   int i = 0;
   for (; i < MD5_DIGEST_LENGTH; i++)
-    sprintf(&dst_name[i*2], "%02x", (unsigned int)md[i]);
+    sprintf(&file->hash[i*2], "%02x", (unsigned int)md[i]);
 
-  strcpy (&dst_name[i*2],get_extension(fqpn));
+  strcpy (&file->hash[i*2],get_extension(file->fqpn));
   return true;
 }

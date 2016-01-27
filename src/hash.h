@@ -19,11 +19,10 @@
 
 #include <stdbool.h>
 #include "args.h"
+#include "file.h"
 
-#define _READ_BUF_SIZE 4194304  // 4MB; photos are not small
-
-bool compute_hash (const args_t* args,const char* fqpn, char* dst_name, int name_len);
-bool compute_sha1(const char* fqpn, char* dst_name, int name_len);
-bool compute_md5(const char* fqpn, char* dst_name, int name_len);
+bool compute_hash (const args_t* args, file_t* file);
+bool compute_sha1(file_t* file);
+bool compute_md5(file_t* file);
 
 #endif // INC_HASH_H

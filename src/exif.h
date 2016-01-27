@@ -18,8 +18,9 @@
 #define INC_EXIF_H
 
 #include "common.h"
+#include "file.h"
 #include <libexif/exif-data.h>
 
-bool exif_date (const char* fqpn, date_t* date);
+bool exif_date (file_t* file, date_t* date);
 
 #endif // INC_EXIF_H

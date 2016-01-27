@@ -21,11 +21,13 @@
 #include <limits.h>
 #include <string.h>
 #include <signal.h>
+#include <unistd.h>
 
 #include "main.h"
 #include "args.h"
-#include "sha.h"
+#include "hash.h"
 #include "extract.h"
+#include "exif.h"
 
 counters_t counters;
 const args_t* args = 0;
@@ -57,8 +59,10 @@ int main (int argc, char **argv)
   return 0;
 }
 
-void perform_delete_src(const char* src_fqpn, const char* dst_fqpn)
+void perform_delete_src(const char* src_fqpn, const char* src_sha, const char* dst_fqpn)
 {
+  char dst_sha[PATH_MAX];
+
   switch (args->operation)
   {
     case OPERATION_NOP: // simply suggest what we would do
@@ -69,8 +73,19 @@ void perform_delete_src(const char* src_fqpn, const char* dst_fqpn)
       if (args->verbose)
         printf ("Delete %s, duplicate of %s\n",src_fqpn,dst_fqpn);
 
+      if (!compute_hash(args,dst_fqpn,dst_sha,sizeof(dst_sha)))
+      {
+        fprintf (stderr,"Failed to compute hash for %s: %s.\n",dst_fqpn,strerror (errno));
+        return;
+      }
+
+      if (strcmp (src_sha,dst_sha) != 0)
+      {
+        fprintf (stderr,"Refusing to delete: %s != %s!\n",src_fqpn,dst_fqpn);
+        return;
+      }
       if (unlink (src_fqpn) != 0)
-        fprintf (stderr,"Failed to delete '%s': %s.\n",src_fqpn,strerror (errno));
+        fprintf (stderr,"Failed to delete %s: %s.\n",src_fqpn,strerror (errno));
     break;
   }
 }
@@ -89,7 +104,7 @@ void perform_move_src(const char* src_fqpn, const char* dst_dir, const char* dst
     case OPERATION_MOVE:
       if (!create_directory_if (dst_dir))
       {
-        fprintf (stderr,"Failed to create directory '%s': %s.\n",dst_dir,strerror (errno));
+        fprintf (stderr,"Failed to create directory %s: %s.\n",dst_dir,strerror (errno));
         return;
       }
       snprintf (dst_fqpn,PATH_MAX,"%s/%s",dst_dir,dst_name);
@@ -118,10 +133,13 @@ void process_file (const char* src_dir, const char* src_name, const char* src_fq
 //  if (args->verbose)
 //    printf ("Processing file %s.\n",src_fqpn);
 
-  // first compute the sha1 of the source file
+  // first compute the hash of the source file
   char dst_name[PATH_MAX];
-  if (!compute_sha1(src_fqpn,dst_name,sizeof(dst_name)))
+  if (!compute_hash(args,src_fqpn,dst_name,sizeof(dst_name)))
+  {
+    fprintf (stderr,"Failed to compute hash for %s: %s.\n",src_fqpn,strerror (errno));
     return;
+  }
 
   // now attempt to get 'date' metadata from the file
   date_t date;
@@ -166,12 +184,12 @@ void process_file (const char* src_dir, const char* src_name, const char* src_fq
 
   struct stat st_dst;
   ret = stat(dst_fqpn,&st_dst);
-  if (ret == 0) // dst file exists already - // FLAG: Does it have the same content??
+  if (ret == 0) // dst file exists already
   {
     if (!same_file (&st_src,&st_dst))
     {
       if (*args->dup_dir == 0)
-        perform_delete_src (src_fqpn,dst_fqpn);
+        perform_delete_src (src_fqpn,dst_name,dst_fqpn);
       else
         perform_move_src(src_fqpn,args->dup_dir,dst_name);  // send file to dup dir; what if it already exists here? has diff content?
     }

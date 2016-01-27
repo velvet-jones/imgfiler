@@ -79,10 +79,16 @@ bool read_iso8601 (const char* data, date_t* date)
   if (date->tm.tm_year == 0 || date->tm.tm_mon < 1 || date->tm.tm_mon > 12 || date->tm.tm_mday < 1 || date->tm.tm_mday > 31)
       return false;
 
-  date->valid = true;
   date->tm.tm_isdst = -1;    // no dst data available
   date->tm.tm_mon -= 1;      // zero-based months
   date->tm.tm_year -= 1900;  // years are offset from 1900
+
+  // if the time is 1970-01-01 00:00:00, it was probablyt set to "0000:00:00 00:00:00"
+  time_t t = mktime (&date->tm);
+  if (t == 0)
+    return false;
+
+  date->valid = true;
   return true;
 }
 
@@ -129,9 +135,15 @@ bool read_yyyymmdd (const char* data, date_t* date)
   if (date->tm.tm_year == 0 || date->tm.tm_mon < 1 || date->tm.tm_mon > 12 || date->tm.tm_mday < 1 || date->tm.tm_mday > 31)
       return false;
 
-  date->valid = true;
   date->tm.tm_isdst = -1;    // no dst data available
   date->tm.tm_mon -= 1;      // zero-based months
   date->tm.tm_year -= 1900;  // years are offset from 1900
+
+  // if the time is 1970-01-01 00:00:00, it was probablyt set to "0000:00:00 00:00:00"
+  time_t t = mktime (&date->tm);
+  if (t == 0)
+    return false;
+
+  date->valid = true;
   return true;
 }

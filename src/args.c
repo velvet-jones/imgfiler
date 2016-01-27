@@ -37,6 +37,7 @@ const args_t* get_args (int argc, char **argv)
     static struct option long_options[] = {
         {"verbose",     no_argument,       &args.verbose, 1},
         {"move",        no_argument,       &args.operation, 1},
+        {"md5",         no_argument,       &args.hash, 1},
         {"version",     no_argument,       0, 'v'},
         {"help",        no_argument,       0, 'h'},
         {"source",      required_argument, 0, 's'},
@@ -131,6 +132,7 @@ void show_help(const char* app)
   printf("  -u, --duplicates          If provided, holds duplicates; otherwise duplicate files are deleted\n");
   printf("  -l, --dateless            If provided, holds dateless; otherwise dateless files are skipped\n");
   printf("  --move                    Default behavior suggests only; use this to perform the operations\n");
+  printf("  --md5                     Use md5 instead of the default sha1\n");
   printf("  -v, --version             Show the version number\n");
   printf("  -h, --help                Show this help\n");
 }
@@ -148,25 +150,25 @@ void validate_args(const char* app, const args_t* args)
 
   if (!validate_dir(args->src_dir))
   {
-    fprintf (stderr,"Source directory '%s' does not exist.\n",args->src_dir);
+    fprintf (stderr,"Source directory %s does not exist.\n",args->src_dir);
     exit (1);
   }
 
   if (!validate_dir(args->dst_dir))
   {
-    fprintf (stderr,"Destination directory '%s' does not exist.\n",args->dst_dir);
+    fprintf (stderr,"Destination directory %s does not exist.\n",args->dst_dir);
     exit (1);
   }
 
   if (*args->dup_dir != 0 && !validate_dir(args->dup_dir))
   {
-    fprintf (stderr,"Duplicates directory '%s' does not exist.\n",args->dup_dir);
+    fprintf (stderr,"Duplicates directory %s does not exist.\n",args->dup_dir);
     exit (1);
   }
 
   if (*args->dateless_dir != 0 && !validate_dir(args->dateless_dir))
   {
-    fprintf (stderr,"Dateless directory '%s' does not exist.\n",args->dateless_dir);
+    fprintf (stderr,"Dateless directory %s does not exist.\n",args->dateless_dir);
     exit (1);
   }
 }

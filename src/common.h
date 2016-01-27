@@ -38,7 +38,6 @@ typedef struct {
 } date_t;
 
 void right_trim (char* buf, char c);
-bool is7BitAscii (const char* s);
 const char* contains (const char* s, char c);
 const char* read_integer (const char* buf,const char* delimiters,int max_chars,int* result);
 const char* read_long (const char* buf,const char* delimiters,int max_chars,long* result);

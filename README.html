@@ -734,38 +734,152 @@ asciidoc.install();
 <body class="article">
 <div id="header">
 <h1>Image Filer</h1>
+<span id="author">A utility for organizing digital photos</span><br />
 </div>
 <div id="content">
 <div id="preamble">
 <div class="sectionbody">
-<div class="paragraph"><p>This utility scans a directory for image files, renames each file
-according to its SHA-1 checksum, then moves the file to a
-destination directory based on the date in the file&#8217;s metadata.</p></div>
-<div class="paragraph"><p>This is typically used for sorting photographs based on the date they were taken.</p></div>
+<div class="paragraph"><p>This program re-organizes your digital photos by moving them
+into a directory based on the date the photo was taken.</p></div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_configuration">Configuration</h2>
+<div class="sectionbody">
+<div class="paragraph"><p>All setting are provided on the command line. There is no configuration file.</p></div>
+<div class="dlist"><dl>
+<dt class="hdlist1">
+--source
+</dt>
+<dd>
+<p>
+Required. The source directory containing photos you want to re-organize.
+</p>
+</dd>
+<dt class="hdlist1">
+--destination
+</dt>
+<dd>
+<p>
+Required. The destination directory that receives the re-organized photos.
+                Can be the same as the source directory.
+</p>
+</dd>
+<dt class="hdlist1">
+--dateless
+</dt>
+<dd>
+<p>
+Optional. If supplied, the program moves photos that have no date
+             into this directory. Without a <em>dateless</em> directory the program will
+             skip dateless photos.
+</p>
+</dd>
+<dt class="hdlist1">
+--duplicates
+</dt>
+<dd>
+<p>
+Optional. If supplied, the program moves photos that are duplicates
+               into this directory. Without a <em>duplicates</em> directory duplicate
+               photos are deleted.
+</p>
+</dd>
+<dt class="hdlist1">
+--md5
+</dt>
+<dd>
+<p>
+Use MD5 instead of SHA1 for hashing.
+</p>
+</dd>
+<dt class="hdlist1">
+--verbose
+</dt>
+<dd>
+<p>
+Print information about each operation. Verbose is enabled by default if
+            <em>--move</em> is not supplied.
+</p>
+</dd>
+<dt class="hdlist1">
+--help
+</dt>
+<dd>
+<p>
+Print instructions for using the program.
+</p>
+</dd>
+<dt class="hdlist1">
+--version
+</dt>
+<dd>
+<p>
+Print the version number of the program.
+</p>
+</dd>
+<dt class="hdlist1">
+--move
+</dt>
+<dd>
+<p>
+Without this, the program simply suggests each operation it would like to perform.
+         If this argument is supplied, the program will carry out all suggested actions.
+         When invoked directly by a user, the <em>--verbose</em> option is useful to see the progress.
+</p>
+</dd>
+</dl></div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_operation">Operation</h2>
+<div class="sectionbody">
 <div class="admonitionblock">
 <table><tr>
 <td class="icon">
 <div class="title">Important</div>
 </td>
-<td class="content">When run without the <em>--move</em> command line argument, the program
-            simply prints the operations it would perform. No changes are made to the
-            file system in this case.</td>
+<td class="content">The program will not make any changes to your system unless you
+           provide the <em>--move</em> command line option. Without this option,
+           the program simply suggests what it would do with each file.</td>
 </tr></table>
 </div>
+<div class="ulist"><ul>
+<li>
+<p>
+There are no issues with overlapping directories. You can specify the same
+  directory for both source and destination.
+</p>
+</li>
+<li>
+<p>
+Photos are renamed according to their <em>hash</em>. A hash of a digital photo is a
+  long sequence of seemingly random characters that uniquely identify that photo.
+</p>
+</li>
+<li>
+<p>
+Hidden directories and files are skipped.
+</p>
+</li>
+</ul></div>
 </div>
 </div>
 <div class="sect1">
 <h2 id="_example_usage">Example Usage</h2>
 <div class="sectionbody">
-<div class="paragraph"><p>We run this command:</p></div>
+<div class="paragraph"><p>In the directory structure below we want to scan the <em>uploads/</em> directory for new photos
+and file them under <em>dated/</em> or <em>dateless/</em>. The command line would be:</p></div>
 <div class="listingblock">
 <div class="content">
-<pre><code>./imgfiler --move --source=/photos/uploads/ --destination=/photos --duplicates=/photos/uploads/duplicates --dateless=/photos/dateless</code></pre>
+<pre><code>$ imgfiler --move --source=/photos/uploads --destination=/photos/dated --dateless=/photos/dateless</code></pre>
 </div></div>
-<div class="paragraph"><p>On a directory structure that looks like this:</p></div>
 <div class="listingblock">
+<div class="title">Directory structure</div>
 <div class="content">
 <pre><code>/photos/
+  |
+  - dated/
   |
   - dateless/
   |
@@ -775,110 +889,25 @@ destination directory based on the date in the file&#8217;s metadata.</p></div>
         |
         - file.jpg
     |
-    - august/
-    |
-    - duplicates/</code></pre>
+    - august/</code></pre>
 </div></div>
-<div class="paragraph"><p>The program does the following:</p></div>
-<div class="ulist"><ul>
-<li>
-<p>
-Recursively scans /photos/uploads
-</p>
-</li>
-<li>
-<p>
-Finds file.jpg
-</p>
-</li>
-<li>
-<p>
-SHA1 of file.jpg is 7028c115056011d6f7078c9b0bb46290
-</p>
-</li>
-<li>
-<p>
-file.jpg has embedded <em>Create Date</em>?
-</p>
-<div class="ulist"><ul>
-<li>
-<p>
-no: move file.jpg to /photos/uploads/dateless/7028c115056011d6f7078c9b0bb46290.jpg
-</p>
-</li>
-<li>
-<p>
-yes: 2002:04:19 21:22:00
-</p>
-<div class="ulist"><ul>
-<li>
-<p>
-Does /photos/2002/04-19/7028c115056011d6f7078c9b0bb46290.jpg exist already?
-</p>
-<div class="ulist"><ul>
-<li>
-<p>
-no: move file.jpg to /photos/2002/04-19/7028c115056011d6f7078c9b0bb46290.jpg; creates required subdirectories
-</p>
-</li>
-<li>
-<p>
-yes: duplicates directory provided?
-</p>
-<div class="ulist"><ul>
-<li>
-<p>
-no: delete file1.jpg
-</p>
-</li>
-<li>
-<p>
-yes: move file.jpg to /photos/uploads/duplicates/7028c115056011d6f7078c9b0bb46290.jpg
-</p>
-</li>
-</ul></div>
-</li>
-</ul></div>
-</li>
-</ul></div>
-</li>
-</ul></div>
-</li>
-</ul></div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_todo">Todo</h2>
+<h2 id="_pruning_empty_directories">Pruning empty directories</h2>
 <div class="sectionbody">
-<div class="ulist"><ul>
-<li>
-<p>
-Remove empty directories
-</p>
-</li>
-<li>
-<p>
-Keep sequence numbers if possible so photos are in order
-</p>
-</li>
-<li>
-<p>
-Group by user if possible (two users in different places on the same day)
-</p>
-</li>
-<li>
-<p>
-accept uid, gid, umask for dst file; update if same file
-</p>
-</li>
-</ul></div>
+<div class="paragraph"><p>The program does not remove empty directories. You can do this with the following command:</p></div>
+<div class="listingblock">
+<div class="content">
+<pre><code>$ find top_directory -type d -exec rmdir {} \; 2&gt;/dev/null</code></pre>
+</div></div>
 </div>
 </div>
 </div>
 <div id="footnotes"><hr /></div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2016-01-26 12:19:11 CET
+Last updated 2016-01-27 16:41:36 CET
 </div>
 </div>
 </body>

@@ -22,6 +22,9 @@
 #define OPERATION_NOP  0
 #define OPERATION_MOVE 1
 
+#define HASH_SHA  0
+#define HASH_MD5  1
+
 typedef struct {
   char  src_dir[PATH_MAX];      // source dir
   char  dst_dir[PATH_MAX];      // dest dir
@@ -29,6 +32,7 @@ typedef struct {
   char  dateless_dir[PATH_MAX]; // holds dateless photos (no exif date)
   int   verbose;                // extra logging
   int   operation;              // nop/copy/move
+  int   hash;                    // nop/copy/move
 } args_t;
 
 const args_t* get_args (int argc, char **argv);

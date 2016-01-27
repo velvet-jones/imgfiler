@@ -1,29 +1,68 @@
 Image Filer
 ===========
+A utility for organizing digital photos
 
-This utility scans a directory for image files, renames each file
-according to its SHA-1 checksum, then moves the file to a
-destination directory based on the date in the file's metadata.
+This program re-organizes your digital photos by moving them
+into a directory based on the date the photo was taken.
 
-This is typically used for sorting photographs based on the date they were taken.
+Configuration
+-------------
+All setting are provided on the command line. There is no configuration file.
 
-IMPORTANT:  When run without the '--move' command line argument, the program
-            simply prints the operations it would perform. No changes are made to the
-            file system in this case.
+--source:: Required. The source directory containing photos you want to re-organize.
+
+--destination:: Required. The destination directory that receives the re-organized photos.
+                Can be the same as the source directory.
+
+--dateless:: Optional. If supplied, the program moves photos that have no date
+             into this directory. Without a 'dateless' directory the program will
+             skip dateless photos.
+
+--duplicates:: Optional. If supplied, the program moves photos that are duplicates
+               into this directory. Without a 'duplicates' directory duplicate
+               photos are deleted.
+
+--md5:: Use MD5 instead of SHA1 for hashing.
+
+--verbose:: Print information about each operation. Verbose is enabled by default if
+            '--move' is not supplied.
+
+--help:: Print instructions for using the program.
+
+--version:: Print the version number of the program.
+
+--move:: Without this, the program simply suggests each operation it would like to perform.
+         If this argument is supplied, the program will carry out all suggested actions.
+         When invoked directly by a user, the '--verbose' option is useful to see the progress.
+
+Operation
+---------
+IMPORTANT: The program will not make any changes to your system unless you
+           provide the '--move' command line option. Without this option,
+           the program simply suggests what it would do with each file.
+
+- There are no issues with overlapping directories. You can specify the same
+  directory for both source and destination.
+
+- Photos are renamed according to their 'hash'. A hash of a digital photo is a
+  long sequence of seemingly random characters that uniquely identify that photo.
+
+- Hidden directories and files are skipped.
 
 Example Usage
 -------------
-
-We run this command:
+In the directory structure below we want to scan the 'uploads/' directory for new photos
+and file them under 'dated/' or 'dateless/'. The command line would be:
 
 ----
-./imgfiler --move --source=/photos/uploads/ --destination=/photos --duplicates=/photos/uploads/duplicates --dateless=/photos/dateless
+$ imgfiler --move --source=/photos/uploads --destination=/photos/dated --dateless=/photos/dateless
 ----
 
-On a directory structure that looks like this:
-
+.Directory structure
 ----
 /photos/
+  |
+  - dated/
   |
   - dateless/
   |
@@ -34,27 +73,12 @@ On a directory structure that looks like this:
         - file.jpg
     |
     - august/
-    |
-    - duplicates/
 ----
 
-The program does the following:
+Pruning empty directories
+-------------------------
+The program does not remove empty directories. You can do this with the following command:
 
-* Recursively scans /photos/uploads
-* Finds file.jpg
-* SHA1 of file.jpg is 7028c115056011d6f7078c9b0bb46290
-* file.jpg has embedded 'Create Date'?
-   ** no: move file.jpg to /photos/uploads/dateless/7028c115056011d6f7078c9b0bb46290.jpg
-   ** yes: 2002:04:19 21:22:00
-       *** Does /photos/2002/04-19/7028c115056011d6f7078c9b0bb46290.jpg exist already?
-          **** no: move file.jpg to /photos/2002/04-19/7028c115056011d6f7078c9b0bb46290.jpg; creates required subdirectories
-          **** yes: duplicates directory provided?
-                 ***** no: delete file1.jpg
-                 ***** yes: move file.jpg to /photos/uploads/duplicates/7028c115056011d6f7078c9b0bb46290.jpg
-
-Todo
 ----
-- Remove empty directories
-- Keep sequence numbers if possible so photos are in order
-- Group by user if possible (two users in different places on the same day)
-- accept uid, gid, umask for dst file; update if same file
+$ find top_directory -type d -exec rmdir {} \; 2>/dev/null
+----

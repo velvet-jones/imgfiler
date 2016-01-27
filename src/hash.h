@@ -14,13 +14,16 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef INC_SHA_H
-#define INC_SHA_H
+#ifndef INC_HASH_H
+#define INC_HASH_H
 
 #include <stdbool.h>
+#include "args.h"
 
 #define _READ_BUF_SIZE 4194304  // 4MB; photos are not small
 
+bool compute_hash (const args_t* args,const char* fqpn, char* dst_name, int name_len);
 bool compute_sha1(const char* fqpn, char* dst_name, int name_len);
+bool compute_md5(const char* fqpn, char* dst_name, int name_len);
 
-#endif // INC_SHA_H
+#endif // INC_HASH_H

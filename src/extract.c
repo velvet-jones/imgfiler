@@ -15,6 +15,7 @@
 */
 
 #include "extract.h"
+#include "date.h"
 #include <extractor.h>
 #include <string.h>
 

@@ -15,6 +15,7 @@
 */
 
 #include "exif.h"
+#include "date.h"
 #include <string.h>
 #include <stdio.h>
 
@@ -23,7 +24,7 @@ void get_tag(ExifData* d, ExifIfd ifd, ExifTag tag, char* buf, int len);
 bool exif_date (const char* fqpn, date_t* date)
 {
   ExifData *ed;
-  ExifEntry *entry;
+//  ExifEntry *entry;
   char data[1024];
   memset (data,0,sizeof(data));
 

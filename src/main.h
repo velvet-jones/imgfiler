@@ -22,7 +22,7 @@
 void process_dir (const char* dir);
 void process_file (const char* dir, const char* name, const char* fqpn);
 void perform_move_src(const char* src_fqpn, const char* dst_dir, const char* dst_name);
-void perform_delete_src(const char* src_fqpn,const char* dst_fqpn);
+void perform_delete_src(const char* src_fqpn,const char* src_sha, const char* dst_fqpn);
 bool format_dst (const char* base_dir, const date_t* date, const char* dst_name, char* dst_dir, char* dst_fqpn);
 void set_sig_handlers ();
 

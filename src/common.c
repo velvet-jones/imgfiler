@@ -18,6 +18,7 @@
 #include <errno.h>
 #include <dirent.h>
 #include <string.h>
+#include <stdlib.h>
 
 // trim whitespace on right
 void right_trim(char* buf, char c)
@@ -95,8 +96,6 @@ const char* read_long (const char* s,const char* delimiters,int max_chars,long* 
   // otherwise, we stopped because we hit the end of the string
 
   int length = p-s;
-  if (delim)    // subtract any delimiter from the length of the string to copy
-    length--;
 
   if (length > 0)
   {

@@ -20,6 +20,7 @@
 #include <string.h>
 #include "args.h"
 #include "common.h"
+#include "config.h"
 
 static args_t args;
 
@@ -85,7 +86,7 @@ const args_t* get_args (int argc, char **argv)
       break;
 
       case 'v':
-        printf ("%s\n",APP_VERSION);
+        printf ("%d.%d\n",APP_VERSION_MAJOR,APP_VERSION_MINOR);
         exit(0);
       break;
 
@@ -107,13 +108,11 @@ const args_t* get_args (int argc, char **argv)
   if (args.operation == OPERATION_NOP)
     args.verbose = 1;
 
-  /* Print any remaining command line arguments (not options). */
+  // we don't support position arguments
   if (optind < argc)
   {
-    printf ("non-option ARGV-elements: ");
-    while (optind < argc)
-      printf ("%s ", argv[optind++]);
-    putchar ('\n');
+    show_help(argv[0]);
+    exit (1);
   }
 
   right_trim (args.src_dir,'/');
@@ -122,6 +121,15 @@ const args_t* get_args (int argc, char **argv)
   right_trim (args.dateless_dir,'/');
 
   validate_args (argv[0],&args);
+
+  if (args.verbose)
+  {
+    printf ("Source dir: %s\n",args.src_dir);
+    printf ("Destination dir: %s\n",args.dst_dir);
+    printf ("Dateless dir: %s\n",args.dateless_dir);
+    printf ("Duplicates dir: %s\n",args.dup_dir);
+  }
+
   return &args;
 }
 

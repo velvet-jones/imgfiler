@@ -4,7 +4,7 @@
 <head>
 <meta http-equiv="Content-Type" content="application/xhtml+xml; charset=UTF-8" />
 <meta name="generator" content="AsciiDoc 8.6.9" />
-<title>Image Filer</title>
+<title>IMGFILER(1)</title>
 <style type="text/css">
 /* Shared CSS for AsciiDoc xhtml11 and html5 backends */
 
@@ -731,121 +731,153 @@ asciidoc.install();
 /*]]>*/
 </script>
 </head>
-<body class="article">
+<body class="manpage">
 <div id="header">
-<h1>Image Filer</h1>
-<span id="author">A utility for organizing digital photos.</span><br />
+<h1>
+IMGFILER(1) Manual Page
+</h1>
+<h2>NAME</h2>
+<div class="sectionbody">
+<p>imgfiler -
+   A utility for organizing digital photos
+</p>
+</div>
 </div>
 <div id="content">
-<div id="preamble">
+<div class="sect1">
+<h2 id="_synopsis">SYNOPSIS</h2>
 <div class="sectionbody">
-<div class="paragraph"><p><code>Copyright &#169; 2016 Bud Millwood&lt;<a href="mailto:bud.millwood@gmail.com">bud.millwood@gmail.com</a>&gt;</code></p></div>
-<div class="paragraph"><p>This program re-organizes your digital photos by moving them
-into a directory based on the date the photo was taken.</p></div>
+<div class="paragraph"><p><strong>imgfiler</strong> [<em>OPTIONS</em>]</p></div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_configuration">Configuration</h2>
+<h2 id="_description">DESCRIPTION</h2>
 <div class="sectionbody">
-<div class="paragraph"><p>All setting are provided on the command line. There is no configuration file.</p></div>
+<div class="paragraph"><p>The imgfiler(1) command re-organizes your digital photos by moving them from
+<em>SOURCE</em> to a subdirectory in <em>DEST</em> based on the date the photo was taken.</p></div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_options">OPTIONS</h2>
+<div class="sectionbody">
 <div class="dlist"><dl>
 <dt class="hdlist1">
---source
+<strong>-s, --source</strong>
 </dt>
 <dd>
 <p>
-Required. The source directory containing photos you want to re-organize.
+    Required. The source directory containing photos you want to re-organize.
 </p>
 </dd>
 <dt class="hdlist1">
---destination
+<strong>-d, --destination</strong>
 </dt>
 <dd>
 <p>
-Required. The destination directory that receives the re-organized photos.
-                Can be the same as the source directory.
+    Required. The destination directory that receives the re-organized photos.
+    Can be the same as the source directory.
 </p>
 </dd>
 <dt class="hdlist1">
---dateless
+<strong>-l, --dateless</strong>
 </dt>
 <dd>
 <p>
-Optional. If supplied, the program moves photos that have no date
-             into this directory. Without a <em>dateless</em> directory the program will
-             skip dateless photos.
+    Optional. If supplied, the program moves photos that have no date
+    into this directory. Without a <em>dateless</em> directory the program will
+    skip dateless photos.
 </p>
 </dd>
 <dt class="hdlist1">
---duplicates
+<strong>-u, --duplicates</strong>
 </dt>
 <dd>
 <p>
-Optional. If supplied, the program moves photos that are duplicates
-               into this directory. Without a <em>duplicates</em> directory the program
-               will delete duplicate photos.
+    Optional. If supplied, the program moves photos that are duplicates
+    into this directory. Without a <em>duplicates</em> directory the program
+    will delete duplicate photos.
 </p>
 </dd>
 <dt class="hdlist1">
---md5
+<strong>--md5</strong>
 </dt>
 <dd>
 <p>
-Use MD5 instead of SHA1 for hashing.
+    Use MD5 instead of SHA1 for hashing.
 </p>
 </dd>
 <dt class="hdlist1">
---verbose
+<strong>--verbose</strong>
 </dt>
 <dd>
 <p>
-Print information about each operation. Verbose is enabled by default if
-            <em>--move</em> is not supplied.
+    Print information about each operation. Verbose is enabled by default if
+    <em>--move</em> is not supplied.
 </p>
 </dd>
 <dt class="hdlist1">
---help
+<strong>-h, --help</strong>
 </dt>
 <dd>
 <p>
-Print instructions for using the program.
+    Print instructions for using the program.
 </p>
 </dd>
 <dt class="hdlist1">
---version
+<strong>-v, --version</strong>
 </dt>
 <dd>
 <p>
-Print the version number of the program.
+    Print the version number of the program.
 </p>
 </dd>
 <dt class="hdlist1">
---move
+<strong>--move</strong>
 </dt>
 <dd>
 <p>
-Without this, the program simply suggests each operation it would like to perform.
-         If this argument is supplied, the program will carry out all suggested actions.
-         When invoked directly by a user, the <em>--verbose</em> option is useful to see the progress.
+    Without this, the program simply suggests each operation it would like to perform.
+    If this argument is supplied, the program will carry out all suggested actions.
+    When invoked directly by a user, the <em>--verbose</em> option is useful to see the progress.
 </p>
 </dd>
 </dl></div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_operation">Operation</h2>
+<h2 id="_exit_status">EXIT STATUS</h2>
 <div class="sectionbody">
-<div class="admonitionblock">
-<table><tr>
-<td class="icon">
-<div class="title">Important</div>
-</td>
-<td class="content">The program will not make any changes to your system unless you
-           provide the <em>--move</em> command line option. Without this option,
-           the program simply suggests what it would do with each file.</td>
-</tr></table>
+<div class="dlist"><dl>
+<dt class="hdlist1">
+<strong>0</strong>
+</dt>
+<dd>
+<p>
+    Success
+</p>
+</dd>
+<dt class="hdlist1">
+<strong>1</strong>
+</dt>
+<dd>
+<p>
+    Failure
+</p>
+</dd>
+</dl></div>
 </div>
+</div>
+<div class="sect1">
+<h2 id="_notes">NOTES</h2>
+<div class="sectionbody">
 <div class="ulist"><ul>
+<li>
+<p>
+The program will not make any changes to your system unless you
+  provide the <em>--move</em> command line option. Without this option,
+  the program simply suggests what it would do with each file.
+</p>
+</li>
 <li>
 <p>
 There are no issues with overlapping directories. You can specify the same
@@ -867,7 +899,7 @@ Hidden directories and files are skipped.
 </div>
 </div>
 <div class="sect1">
-<h2 id="_example_usage">Example Usage</h2>
+<h2 id="_example">EXAMPLE</h2>
 <div class="sectionbody">
 <div class="paragraph"><p>In the directory structure below we want to scan the <em>uploads/</em> directory for new photos
 and file them under <em>dated/</em> or <em>dateless/</em>. The command line would be:</p></div>
@@ -895,20 +927,35 @@ and file them under <em>dated/</em> or <em>dateless/</em>. The command line woul
 </div>
 </div>
 <div class="sect1">
-<h2 id="_pruning_empty_directories">Pruning empty directories</h2>
+<h2 id="_bugs">BUGS</h2>
 <div class="sectionbody">
-<div class="paragraph"><p>The program does not remove empty directories. You can do this with the following command:</p></div>
-<div class="listingblock">
-<div class="content">
-<pre><code>$ find top_directory -type d -exec rmdir {} \; 2&gt;/dev/null</code></pre>
-</div></div>
+<div class="paragraph"><p>There are no known bugs.</p></div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_author">AUTHOR</h2>
+<div class="sectionbody">
+<div class="paragraph"><p>Imagefiler was originally written by Bud Millwood.</p></div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_resources">RESOURCES</h2>
+<div class="sectionbody">
+<div class="paragraph"><p>Source: <a href="https://github.com/velvet-jones/imgfiler/">https://github.com/velvet-jones/imgfiler/</a></p></div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_copying">COPYING</h2>
+<div class="sectionbody">
+<div class="paragraph"><p>Copyright (C) 2016 Bud Millwood. Free use of this software is
+granted under the terms of the GNU General Public License version 3 (GPLv3).</p></div>
 </div>
 </div>
 </div>
 <div id="footnotes"><hr /></div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2016-01-27 23:25:40 CET
+Last updated 2016-01-28 15:44:33 CET
 </div>
 </div>
 </body>

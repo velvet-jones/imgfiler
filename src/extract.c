@@ -16,8 +16,12 @@
 
 #include "extract.h"
 #include "date.h"
-#include <extractor.h>
+#include "config.h"
 #include <string.h>
+
+#ifdef HAVE_EXTRACTOR_H
+
+#include <extractor.h>
 
 int process_data(void *cls,const char *plugin_name, enum EXTRACTOR_MetaType type, enum EXTRACTOR_MetaFormat format,
                  const char *data_mime_type, const char *data,size_t data_len);
@@ -96,3 +100,18 @@ int process_data(void *cls,const char *plugin_name, enum EXTRACTOR_MetaType type
 
   return 0;  // continue
 }
+#else
+bool init_extractor()
+{
+  return true;
+}
+
+void close_extractor()
+{
+}
+
+bool extract_date (const char* fqpn, date_t* date)
+{
+  return false;
+}
+#endif // HAVE_EXTRACTOR_H

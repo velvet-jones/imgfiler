@@ -1,0 +1,126 @@
+IMGFILER(1)
+===========
+:doctype: manpage
+
+
+NAME
+----
+imgfiler - A utility for organizing digital photos
+
+
+SYNOPSIS
+--------
+*imgfiler* ['OPTIONS']
+
+
+DESCRIPTION
+-----------
+The imgfiler(1) command re-organizes your digital photos by moving them from
+'SOURCE' to a subdirectory in 'DEST' based on the date the photo was taken.
+
+
+OPTIONS
+-------
+*-s, --source*::
+    Required. The source directory containing photos you want to re-organize.
+
+*-d, --destination*::
+    Required. The destination directory that receives the re-organized photos.
+    Can be the same as the source directory.
+
+*-l, --dateless*::
+    Optional. If supplied, the program moves photos that have no date
+    into this directory. Without a 'dateless' directory the program will
+    skip dateless photos.
+
+*-u, --duplicates*::
+    Optional. If supplied, the program moves photos that are duplicates
+    into this directory. Without a 'duplicates' directory the program
+    will delete duplicate photos.
+
+*--md5*::
+    Use MD5 instead of SHA1 for hashing.
+
+*--verbose*::
+    Print information about each operation. Verbose is enabled by default if
+    '--move' is not supplied.
+
+*-h, --help*::
+    Print instructions for using the program.
+
+*-v, --version*::
+    Print the version number of the program.
+
+*--move*::
+    Without this, the program simply suggests each operation it would like to perform.
+    If this argument is supplied, the program will carry out all suggested actions.
+    When invoked directly by a user, the '--verbose' option is useful to see the progress.
+
+
+EXIT STATUS
+-----------
+*0*::
+    Success
+
+*1*::
+    Failure
+
+NOTES
+-----
+- The program will not make any changes to your system unless you
+  provide the '--move' command line option. Without this option,
+  the program simply suggests what it would do with each file.
+
+- There are no issues with overlapping directories. You can specify the same
+  directory for both source and destination.
+
+- Photos are renamed according to their 'hash'. A hash of a digital photo is a
+  long sequence of seemingly random characters that uniquely identify that photo.
+
+- Hidden directories and files are skipped.
+
+EXAMPLE
+-------
+In the directory structure below we want to scan the 'uploads/' directory for new photos
+and file them under 'dated/' or 'dateless/'. The command line would be:
+
+----
+$ imgfiler --move --source=/photos/uploads --destination=/photos/dated --dateless=/photos/dateless
+----
+
+.Directory structure
+----
+/photos/
+  |
+  - dated/
+  |
+  - dateless/
+  |
+  - uploads/
+    |
+    - stella/
+        |
+        - file.jpg
+    |
+    - august/
+----
+
+BUGS
+----
+There are no known bugs.
+
+
+AUTHOR
+------
+Imagefiler was originally written by Bud Millwood.
+
+
+RESOURCES
+---------
+Source: <https://github.com/velvet-jones/imgfiler/>
+
+
+COPYING
+-------
+Copyright \(C) 2016 Bud Millwood. Free use of this software is
+granted under the terms of the GNU General Public License version 3 (GPLv3).

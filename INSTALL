@@ -4,8 +4,10 @@ Installing
 Prerequisites
 -------------
 - cmake version 2.6 or later
-- openssl devel package
-- extract devel package
+- openssl
+- libexif
+- optional: extract devel package
+- optional: asciidoc for building the documentation
 
 Compiling
 ---------

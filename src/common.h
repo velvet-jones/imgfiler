@@ -21,8 +21,6 @@
 #include <sys/stat.h>
 #include <time.h>
 
-#define APP_VERSION "1.0"
-
 typedef struct {
   long  total_files;
   long  total_dirs;

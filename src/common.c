@@ -174,10 +174,13 @@ bool create_directory_if (const char* dir)
   const char* component = strchr (dir,'/');
   while (component)
   {
-    strncpy (tmp,dir,component-dir);
-    int ret = mkdir (tmp,0700);
-    if (ret != 0 && errno != EEXIST)
-      return false;
+    if (strlen(component) != strlen(dir))
+    {
+      strncpy (tmp,dir,component-dir);
+      int ret = mkdir (tmp,0700);
+      if (ret != 0 && errno != EEXIST)
+        return false;
+    }
     component = strchr (component+1,'/');
   }
 

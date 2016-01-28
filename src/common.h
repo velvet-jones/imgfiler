@@ -26,6 +26,7 @@ typedef struct {
   long  total_dirs;
   long  duplicates;
   long  missing_date;
+  long  skipped;
 } counters_t;
 
 extern counters_t counters;

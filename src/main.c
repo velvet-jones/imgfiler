@@ -54,6 +54,7 @@ int main (int argc, char **argv)
     printf ("Total files: %ld\n",counters.total_files);
     printf ("Dateless: %ld\n",counters.missing_date);
     printf ("Duplicates: %ld\n",counters.duplicates);
+    printf ("Skipped: %ld\n",counters.skipped);
     printf ("Total dirs: %ld\n",counters.total_dirs);
   }
   return 0;
@@ -130,8 +131,14 @@ bool format_dst (const char* base_dir, const date_t* date, const char* dst_name,
 {
   memset (dst_dir,0,PATH_MAX);
 
-  snprintf (dst_dir,PATH_MAX-1,"%s/%04u/%02u-%02u",base_dir,date->tm.tm_year+1900,date->tm.tm_mon+1,date->tm.tm_mday);
-  snprintf (dst_fqpn,PATH_MAX-1,"%s/%s",dst_dir,dst_name);
+  int ret = snprintf (dst_dir,PATH_MAX-1,"%s/%04u/%02u-%02u",base_dir,date->tm.tm_year+1900,date->tm.tm_mon+1,date->tm.tm_mday);
+  if (ret < 0 || ret >= PATH_MAX-1)
+    return false;  // failed to properly format
+
+  ret = snprintf (dst_fqpn,PATH_MAX-1,"%s/%s",dst_dir,dst_name);
+  if (ret < 0 || ret >= PATH_MAX-1)
+    return false;  // failed to properly format
+
   return true;
 }
 
@@ -168,15 +175,8 @@ void process_file (file_t* src_file)
   char dst_fqpn[PATH_MAX];
   if (!format_dst (args->dst_dir,&date,src_file->hash,dst_dir,dst_fqpn))
   {
-    if (*args->dateless_dir == 0)
-    {
-      if (args->verbose)
-        printf ("Skipping dateless file %s; no dateless directory specified.\n",src_file->fqpn);
-      return;
-    }
-    // no valid date; send this file to the dateless dir
-    perform_move_src (src_file,args->dateless_dir);
-    counters.missing_date++;  // date format is incorrect
+    fprintf (stderr,"Failed to format destination directory for file %s: %s.\n",src_file->fqpn,strerror (errno));
+    counters.skipped++;  // probably the resulting path is too long
     return;
   }
 
@@ -186,6 +186,7 @@ void process_file (file_t* src_file)
   {
     if (!same_file (&src_file->st,&st_dst))
     {
+      counters.duplicates++;
       if (*args->dup_dir == 0)
         perform_delete_src (src_file,dst_fqpn);
       else

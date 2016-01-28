@@ -35,3 +35,6 @@ add_subdirectory (src)
 if(ASCIIDOC_FOUND)
   add_subdirectory (doc)
 endif(ASCIIDOC_FOUND)
+
+# always install the man page, even if not rebuilding it
+install(FILES doc/imgfiler.1 DESTINATION share/man/man1)

@@ -1,7 +1,5 @@
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-install(FILES imgfiler.1 DESTINATION share/man/man1)
-
 add_custom_command(
     OUTPUT imgfiler.1
     DEPENDS imgfiler.1.txt

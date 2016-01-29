@@ -5,8 +5,13 @@ set (TARGET_NAME imgfiler)
 file (GLOB folder_SOURCES *.c)
 file (GLOB folder_HEADERS *.h)
 
+set(OPTIONAL_LIBS )
+if (EXTRACTOR_FOUND)
+  set(OPTIONAL_LIBS ${OPTIONAL_LIBS} ${EXTRACTOR_LIBRARY})
+endif(EXTRACTOR_FOUND)
+
 add_executable(${TARGET_NAME} ${folder_SOURCES} ${folder_HEADERS})
-target_link_libraries (${TARGET_NAME} ${EXIF_LIBRARY} ${EXTRACTOR_LIBRARY} ${OPENSSL_LIBRARIES})
+target_link_libraries (${TARGET_NAME} ${EXIF_LIBRARY} ${OPTIONAL_LIBS} ${OPENSSL_LIBRARIES})
 include_directories(${CMAKE_BINARY_DIR})
 
 install(TARGETS ${TARGET_NAME} DESTINATION bin)

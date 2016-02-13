@@ -2,12 +2,12 @@
 .\"     Title: imgfiler
 .\"    Author: [see the "AUTHOR" section]
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 01/28/2016
+.\"      Date: 02/13/2016
 .\"    Manual: \ \&
 .\"    Source: \ \&
 .\"  Language: English
 .\"
-.TH "IMGFILER" "1" "01/28/2016" "\ \&" "\ \&"
+.TH "IMGFILER" "1" "02/13/2016" "\ \&" "\ \&"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -39,7 +39,7 @@ The imgfiler(1) command re\-organizes your digital photos by moving them from \f
 .PP
 \fB\-s, \-\-source\fR
 .RS 4
-Required\&. The source directory containing photos you want to re\-organize\&.
+Required\&. The source directory containing photos you want to re\-organize\&. Optionally, the name of a single photo\&.
 .RE
 .PP
 \fB\-d, \-\-destination\fR
@@ -156,7 +156,7 @@ In the directory structure below we want to scan the \fIuploads/\fR directory fo
 .RS 4
 .\}
 .nf
-$ imgfiler \-\-move \-\-source=/photos/uploads \-\-destination=/photos/dated \-\-dateless=/photos/dateless
+$ imgfiler \-\-move \-\-source /photos/uploads \-\-destination /photos/dated \-\-dateless /photos/dateless
 .fi
 .if n \{\
 .RE

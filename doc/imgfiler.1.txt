@@ -22,7 +22,7 @@ The imgfiler(1) command re-organizes your digital photos by moving them from
 OPTIONS
 -------
 *-s, --source*::
-    Required. The source directory containing photos you want to re-organize.
+    Required. The source directory containing photos you want to re-organize. Optionally, the name of a single photo.
 
 *-d, --destination*::
     Required. The destination directory that receives the re-organized photos.
@@ -85,7 +85,7 @@ In the directory structure below we want to scan the 'uploads/' directory for ne
 and file them under 'dated/' or 'dateless/'. The command line would be:
 
 ----
-$ imgfiler --move --source=/photos/uploads --destination=/photos/dated --dateless=/photos/dateless
+$ imgfiler --move --source /photos/uploads --destination /photos/dated --dateless /photos/dateless
 ----
 
 .Directory structure

@@ -18,3 +18,6 @@ From the top-level directory:
 - cmake ..
 - make
 - make install
+
+There are two extra Makefile targets not built by default: man & html.
+You only need to make these targets if you have updated the documentation.

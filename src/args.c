@@ -24,7 +24,7 @@
 
 static args_t args;
 
-void validate_args(const char* app, const args_t* args);
+void validate_args(const char* app, args_t* args);
 void show_help();
 
 const args_t* get_args (int argc, char **argv)
@@ -124,7 +124,7 @@ const args_t* get_args (int argc, char **argv)
 
   if (args.verbose)
   {
-    printf ("Source dir: %s\n",args.src_dir);
+    printf ("Source: %s\n",args.src_dir);
     printf ("Destination dir: %s\n",args.dst_dir);
     printf ("Dateless dir: %s\n",args.dateless_dir);
     printf ("Duplicates dir: %s\n",args.dup_dir);
@@ -136,7 +136,7 @@ const args_t* get_args (int argc, char **argv)
 void show_help(const char* app)
 {
   printf("Usage: %s [OPTIONS]\n", app);
-  printf("  -s, --source              The source directory containing photos\n");
+  printf("  -s, --source              The source directory containing photos. Optionally, the name of a single photo.\n");
   printf("  -d, --destination         The destination directory for photos\n");
   printf("  -u, --duplicates          If provided, holds duplicates; otherwise duplicate files are deleted\n");
   printf("  -l, --dateless            If provided, holds dateless; otherwise dateless files are skipped\n");
@@ -146,7 +146,7 @@ void show_help(const char* app)
   printf("  -h, --help                Show this help\n");
 }
 
-void validate_args(const char* app, const args_t* args)
+void validate_args(const char* app, args_t* args)
 {
   /* If no dateless_dir, we just leave the original file as is.
      If no duplicates dir, we delete the source file. (Otherwise we move it to the dup dir)
@@ -157,25 +157,30 @@ void validate_args(const char* app, const args_t* args)
     exit(1);
   }
 
-  if (!validate_dir(args->src_dir))
+  if (!validate_name(args->src_dir,S_IFDIR))
   {
-    fprintf (stderr,"Source directory %s does not exist.\n",args->src_dir);
-    exit (1);
+    if (!validate_name (args->src_dir,S_IFREG))
+    {
+      fprintf (stderr,"Source %s does not exist.\n",args->src_dir);
+      exit (1);
+    }
+    else
+      args->src_is_file = 1;
   }
 
-  if (!validate_dir(args->dst_dir))
+  if (!validate_name(args->dst_dir,S_IFDIR))
   {
     fprintf (stderr,"Destination directory %s does not exist.\n",args->dst_dir);
     exit (1);
   }
 
-  if (*args->dup_dir != 0 && !validate_dir(args->dup_dir))
+  if (*args->dup_dir != 0 && !validate_name(args->dup_dir,S_IFDIR))
   {
     fprintf (stderr,"Duplicates directory %s does not exist.\n",args->dup_dir);
     exit (1);
   }
 
-  if (*args->dateless_dir != 0 && !validate_dir(args->dateless_dir))
+  if (*args->dateless_dir != 0 && !validate_name(args->dateless_dir,S_IFDIR))
   {
     fprintf (stderr,"Dateless directory %s does not exist.\n",args->dateless_dir);
     exit (1);

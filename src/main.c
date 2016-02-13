@@ -46,7 +46,11 @@ int main (int argc, char **argv)
     exit (1);
   }
 
-  process_dir (args->src_dir);
+  if (args->src_is_file == 1)
+    map_and_process_file (args->src_dir);
+  else
+    process_dir (args->src_dir);
+
   close_extractor();
 
   if (args->verbose)
@@ -142,11 +146,22 @@ bool format_dst (const char* base_dir, const date_t* date, const char* dst_name,
   return true;
 }
 
+void map_and_process_file(const char* path)
+{
+  // map the file
+  file_t* src_file = map_file (path);
+  if (!src_file)
+  {
+    fprintf (stderr,"Failed to open file %s: %s.\n",path,strerror (errno));
+    return;
+  }
+
+  process_file (src_file);
+  unmap_file (src_file);
+}
+
 void process_file (file_t* src_file)
 {
-//  if (args->verbose)
-//    printf ("Processing file %s.\n",src_fqpn);
-
   // compute the hash of the source file
   if (!compute_hash(args,src_file))
   {
@@ -269,15 +284,7 @@ void process_dir (const char* dir)
       counters.total_files++;
       if (d_name[0] != '.')  // we ignore hidden files
       {
-        // map the file
-        file_t* src_file = map_file (path);
-        if (src_file)
-        {
-          process_file (src_file);
-          unmap_file (src_file);
-        }
-        else
-          fprintf (stderr,"Failed to open file %s: %s.\n",path,strerror (errno));
+        map_and_process_file (path);
       }
       else
       {

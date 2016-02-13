@@ -43,7 +43,7 @@ const char* read_long (const char* buf,const char* delimiters,int max_chars,long
 bool same_file (struct stat* st1, struct stat* st2);
 bool to_long (const char* s, long* l);
 const char* get_extension (const char* fqpn);
-bool validate_dir (const char* dir);
+bool validate_name (const char* name, mode_t mode);
 bool create_directory_if (const char* dir);
 
 #endif // INC_COMMON_H

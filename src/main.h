@@ -21,6 +21,7 @@
 #include "file.h"
 
 void process_dir (const char* dir);
+void map_and_process_file(const char* path);
 void process_file (file_t*);
 void perform_move_src(file_t* src_file, const char* dst_dir);
 void perform_delete_src(file_t* src_file, const char* dst_fqpn);

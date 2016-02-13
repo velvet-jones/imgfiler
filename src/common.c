@@ -152,17 +152,13 @@ const char* get_extension (const char* fqpn)
     return dot;  // returns extension preceded by dot
 }
 
-// check if a directory exists
-bool validate_dir (const char* dir)
+// check if a name refers to a file, directory, etc.
+bool validate_name (const char* name, mode_t mode)
 {
-  DIR* d;
-  d = opendir (dir);
-
-  if (!d)
+  struct stat st;
+  if (stat(name,&st) != 0)
     return false;
-
-  closedir (d);
-  return true;
+  return (st.st_mode & mode);
 }
 
 // create a directory structure, like 'mkdir -p' does

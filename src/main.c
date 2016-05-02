@@ -22,6 +22,8 @@
 #include <string.h>
 #include <signal.h>
 #include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 #include "main.h"
 #include "args.h"
@@ -34,6 +36,8 @@ const args_t* args = 0;
 
 int main (int argc, char **argv)
 {
+  umask (022);
+
   memset (&counters,0,sizeof(counters_t));
 
   args = get_args (argc,argv);

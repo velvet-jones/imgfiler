@@ -24,5 +24,6 @@
 bool compute_hash (const args_t* args, file_t* file);
 bool compute_sha1(file_t* file);
 bool compute_md5(file_t* file);
+unsigned char compute_pearson_hash (const char* name, int combinations);
 
 #endif // INC_HASH_H

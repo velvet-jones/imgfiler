@@ -27,5 +27,6 @@ void perform_move_src(file_t* src_file, const char* dst_dir);
 void perform_delete_src(file_t* src_file, const char* dst_fqpn);
 bool format_dst (const char* base_dir, const date_t* date, const char* dst_name, char* dst_dir, char* dst_fqpn);
 void set_sig_handlers ();
+void wait_for_children();
 
 #endif // INC_MAIN_H

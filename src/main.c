@@ -24,6 +24,7 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/wait.h>
 
 #include "main.h"
 #include "args.h"
@@ -33,6 +34,7 @@
 
 counters_t counters;
 const args_t* args = 0;
+int process_index = 0;
 
 int main (int argc, char **argv)
 {
@@ -50,10 +52,20 @@ int main (int argc, char **argv)
     exit (1);
   }
 
+  // fork all children
+  for (;process_index < args->jobs-1; ++process_index)
+  {
+    if (fork() == 0)
+      break;  // no grandchildren
+  }
+
   if (args->src_is_file == 1)
     map_and_process_file (args->src_dir);
   else
     process_dir (args->src_dir);
+
+  if (process_index == 0)
+    wait_for_children();
 
   close_extractor();
 
@@ -66,6 +78,24 @@ int main (int argc, char **argv)
     printf ("Total dirs: %ld\n",counters.total_dirs);
   }
   return 0;
+}
+
+void wait_for_children()
+{
+  int wait_status = 0;
+  int ret = 0;
+
+  do
+  {
+    ret = wait(&wait_status);
+    if (ret == -1)
+    {
+      if (errno != ECHILD)
+        fprintf (stderr,"Failed to wait for child processes.\n");
+      break;
+    }
+  }
+  while (wait_status > 0);
 }
 
 void perform_delete_src(file_t* src_file, const char* dst_fqpn)
@@ -152,6 +182,10 @@ bool format_dst (const char* base_dir, const date_t* date, const char* dst_name,
 
 void map_and_process_file(const char* path)
 {
+  unsigned char index = compute_pearson_hash (path,args->jobs);
+  if (index != process_index)
+    return;  // another process will handle this file
+
   // map the file
   file_t* src_file = map_file (path);
   if (!src_file)
@@ -161,7 +195,8 @@ void map_and_process_file(const char* path)
   }
 
   process_file (src_file);
-  unmap_file (src_file);
+  if (unmap_file (src_file) != 0)
+    fprintf (stderr,"Failed to close file %s: %s.\n",path,strerror (errno));
 }
 
 void process_file (file_t* src_file)

@@ -1,6 +1,6 @@
 Notes For Developers
 ====================
-This program was written by Bud Millwood<bud.millwood@gmail.com>
+This program was written by Bud Millwood <bud.millwood@gmail.com>
 
 The program works like this:
 
@@ -13,14 +13,13 @@ The program works like this:
        *** Does /photos/2002/04-19/7028c115056011d6f7078c9b0bb46290.jpg exist already?
           **** no: move file.jpg to /photos/2002/04-19/7028c115056011d6f7078c9b0bb46290.jpg; creates required subdirectories
           **** yes: duplicates directory provided?
-                 ***** no: delete file1.jpg
+                 ***** no: delete file.jpg
                  ***** yes: move file.jpg to /photos/uploads/duplicates/7028c115056011d6f7078c9b0bb46290.jpg
 
 We use both libextractor and libexif to try to find date information in media files.
 
 Todo
 ----
-- Remove empty directories
 - Keep sequence numbers if possible so photos are in order
 - Group by user if possible (two users in different places on the same day)
 - accept uid, gid, umask for dst file; update if same file

@@ -34,6 +34,7 @@ typedef struct {
   int   operation;              // nop/copy/move
   int   hash;                   // nop/copy/move
   int   src_is_file;            // src_dir refers to: 0 = dir, 1 = file
+  int   jobs;
 } args_t;
 
 const args_t* get_args (int argc, char **argv);

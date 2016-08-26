@@ -30,6 +30,7 @@ void show_help();
 const args_t* get_args (int argc, char **argv)
 {
   memset (&args,0,sizeof(args_t));
+  args.jobs = 1;
 
   int c;
 
@@ -45,13 +46,14 @@ const args_t* get_args (int argc, char **argv)
         {"destination", required_argument, 0, 'd'},
         {"duplicates",  required_argument, 0, 'u'},
         {"dateless",    required_argument, 0, 'l'},
+        {"jobs",        required_argument, 0, 'j'},
         {0,             0,                 0, 0}
     };
 
     /* getopt_long stores the option index here. */
     int option_index = 0;
 
-    c = getopt_long (argc, argv, "vhs:d:u:l:", long_options, &option_index);
+    c = getopt_long (argc, argv, "vhj:s:d:u:l:", long_options, &option_index);
 
     /* Detect the end of the options. */
     if (c == -1)
@@ -83,6 +85,10 @@ const args_t* get_args (int argc, char **argv)
 
       case 'l':
         strcpy (args.dateless_dir,optarg);
+      break;
+
+      case 'j':
+        args.jobs = atoi (optarg);
       break;
 
       case 'v':
@@ -140,6 +146,7 @@ void show_help(const char* app)
   printf("  -d, --destination         The destination directory for photos\n");
   printf("  -u, --duplicates          If provided, holds duplicates; otherwise duplicate files are deleted\n");
   printf("  -l, --dateless            If provided, holds dateless; otherwise dateless files are skipped\n");
+  printf("  -j, --jobs                Number of simultaneous jobs to run\n");
   printf("  --move                    Default behavior suggests only; use this to perform the operations\n");
   printf("  --md5                     Use md5 instead of the default sha1\n");
   printf("  -v, --version             Show the version number\n");
@@ -183,6 +190,12 @@ void validate_args(const char* app, args_t* args)
   if (*args->dateless_dir != 0 && !validate_name(args->dateless_dir,S_IFDIR))
   {
     fprintf (stderr,"Dateless directory %s does not exist.\n",args->dateless_dir);
+    exit (1);
+  }
+
+  if (args->jobs < 1 || args->jobs > 256)
+  {
+    fprintf (stderr,"Number of jobs must be 1-256.\n");
     exit (1);
   }
 }

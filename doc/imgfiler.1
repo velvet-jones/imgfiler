@@ -2,12 +2,12 @@
 .\"     Title: imgfiler
 .\"    Author: [see the "AUTHOR" section]
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 02/13/2016
+.\"      Date: 08/26/2016
 .\"    Manual: \ \&
 .\"    Source: \ \&
 .\"  Language: English
 .\"
-.TH "IMGFILER" "1" "02/13/2016" "\ \&" "\ \&"
+.TH "IMGFILER" "1" "08/26/2016" "\ \&" "\ \&"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -59,6 +59,11 @@ directory the program will skip dateless photos\&.
 Optional\&. If supplied, the program moves photos that are duplicates into this directory\&. Without a
 \fIduplicates\fR
 directory the program will delete duplicate photos\&.
+.RE
+.PP
+\fB\-j, \-\-jobs\fR
+.RS 4
+Run multiple jobs in parallel\&. If your disk utilization is low, increase the number of jobs until you hit 100%\&.
 .RE
 .PP
 \fB\-\-md5\fR
@@ -188,10 +193,10 @@ $ imgfiler \-\-move \-\-source /photos/uploads \-\-destination /photos/dated \-\
 .sp
 .SH "BUGS"
 .sp
-There are no known bugs\&.
+When running multiple jobs, the foreground process doesn\(cqt seem to correctly wait for the child processes\&. It (incorrectly) exits when it has completed its job, not when all children have completed their jobs\&.
 .SH "AUTHOR"
 .sp
-Imagefiler was originally written by Bud Millwood\&.
+Imagefiler was written by Bud Millwood\&.
 .SH "RESOURCES"
 .sp
 Source: https://github\&.com/velvet\-jones/imgfiler/

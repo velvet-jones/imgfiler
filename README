@@ -24,6 +24,9 @@ All setting are provided on the command line. There is no configuration file.
                into this directory. Without a 'duplicates' directory the program
                will delete duplicate photos.
 
+--jobs:: Run multiple jobs in parallel. If your disk utilization is low, increase the number of jobs
+         until you hit 100%.
+
 --md5:: Use MD5 instead of SHA1 for hashing.
 
 --verbose:: Print information about each operation. Verbose is enabled by default if
@@ -50,6 +53,8 @@ IMPORTANT: The program will not make any changes to your system unless you
   long sequence of seemingly random characters that uniquely identify that photo.
 
 - Hidden directories and files are skipped.
+
+- Reports are currently printed per job, not one report for the whole run.
 
 Example Usage
 -------------

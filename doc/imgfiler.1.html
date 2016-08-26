@@ -799,6 +799,15 @@ IMGFILER(1) Manual Page
 </p>
 </dd>
 <dt class="hdlist1">
+<strong>-j, --jobs</strong>
+</dt>
+<dd>
+<p>
+    Run multiple jobs in parallel. If your disk utilization is low, increase the number of jobs
+    until you hit 100%.
+</p>
+</dd>
+<dt class="hdlist1">
 <strong>--md5</strong>
 </dt>
 <dd>
@@ -929,13 +938,14 @@ and file them under <em>dated/</em> or <em>dateless/</em>. The command line woul
 <div class="sect1">
 <h2 id="_bugs">BUGS</h2>
 <div class="sectionbody">
-<div class="paragraph"><p>There are no known bugs.</p></div>
+<div class="paragraph"><p>When running multiple jobs, the foreground process doesn&#8217;t seem to correctly wait for the child processes.
+It (incorrectly) exits when it has completed its job, not when all children have completed their jobs.</p></div>
 </div>
 </div>
 <div class="sect1">
 <h2 id="_author">AUTHOR</h2>
 <div class="sectionbody">
-<div class="paragraph"><p>Imagefiler was originally written by Bud Millwood.</p></div>
+<div class="paragraph"><p>Imagefiler was written by Bud Millwood.</p></div>
 </div>
 </div>
 <div class="sect1">
@@ -955,7 +965,7 @@ granted under the terms of the GNU General Public License version 3 (GPLv3).</p>
 <div id="footnotes"><hr /></div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2016-02-13 01:12:40 CET
+Last updated 2016-08-26 18:37:20 CEST
 </div>
 </div>
 </body>

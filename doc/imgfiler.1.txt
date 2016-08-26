@@ -38,6 +38,10 @@ OPTIONS
     into this directory. Without a 'duplicates' directory the program
     will delete duplicate photos.
 
+*-j, --jobs*::
+    Run multiple jobs in parallel. If your disk utilization is low, increase the number of jobs
+    until you hit 100%.
+
 *--md5*::
     Use MD5 instead of SHA1 for hashing.
 
@@ -107,12 +111,13 @@ $ imgfiler --move --source /photos/uploads --destination /photos/dated --dateles
 
 BUGS
 ----
-There are no known bugs.
+When running multiple jobs, the foreground process doesn't seem to correctly wait for the child processes.
+It (incorrectly) exits when it has completed its job, not when all children have completed their jobs.
 
 
 AUTHOR
 ------
-Imagefiler was originally written by Bud Millwood.
+Imagefiler was written by Bud Millwood.
 
 
 RESOURCES

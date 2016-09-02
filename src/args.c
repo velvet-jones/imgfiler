@@ -92,7 +92,7 @@ const args_t* get_args (int argc, char **argv)
       break;
 
       case 'v':
-        printf ("%d.%d\n",APP_VERSION_MAJOR,APP_VERSION_MINOR);
+        printf ("%d.%d.%d\n",APP_VERSION_MAJOR,APP_VERSION_MINOR,APP_VERSION_PATCH);
         exit(0);
       break;
 

@@ -7,7 +7,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
 
 # version number of the app
 set (APP_VERSION_MAJOR 1)
-set (APP_VERSION_MINOR 0)
+set (APP_VERSION_MINOR 2)
 
 # create config.h
 include (CheckIncludeFiles)

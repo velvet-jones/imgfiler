@@ -2,7 +2,7 @@ Image Filer
 ===========
 A utility for organizing digital photos.
 
-+Copyright (C) 2016 Bud Millwood<bud.millwood@gmail.com>+
+*Copyright (c) 2016 Bud Millwood*
 
 This program re-organizes your digital photos by moving them
 into a directory based on the date the photo was taken.
@@ -54,33 +54,28 @@ IMPORTANT: The program will not make any changes to your system unless you
 
 - Hidden directories and files are skipped.
 
-- Reports are currently printed per job, not one report for the whole run.
-
 Example Usage
 -------------
-In the directory structure below we want to scan the 'uploads/' directory for new photos
-and file them under 'dated/' or 'dateless/'. The command line would be:
+In the directory structure below we want to scan the 'photos/uploads/' directory for new photos
+and file them under 'photos/' or 'photos/dateless/'. The command line would be:
 
 ----
-$ imgfiler --move --source=/photos/uploads --destination=/photos/dated --dateless=/photos/dateless
+$ imgfiler --move --source=/photos/uploads --destination=/photos --dateless=/photos/dateless
 ----
 
-.Directory structure
-----
-/photos/
-  |
-  - dated/
-  |
-  - dateless/
-  |
-  - uploads/
-    |
-    - stella/
+Directory structure
+
+    /photos/
+      |
+      - dateless/
+      |
+      - uploads/
         |
-        - file.jpg
-    |
-    - august/
-----
+        - stella/
+            |
+            - file.jpg
+        |
+        - august/
 
 Pruning empty directories
 -------------------------

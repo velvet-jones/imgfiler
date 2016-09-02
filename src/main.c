@@ -35,12 +35,14 @@
 counters_t counters;
 const args_t* args = 0;
 int process_index = 0;
+pid_t child_pids[255];  // we don't store the parent pid
 
 int main (int argc, char **argv)
 {
   umask (022);
 
   memset (&counters,0,sizeof(counters_t));
+  memset (&child_pids,0,sizeof(child_pids));
 
   args = get_args (argc,argv);
 
@@ -52,11 +54,16 @@ int main (int argc, char **argv)
     exit (1);
   }
 
-  // fork all children
-  for (;process_index < args->jobs-1; ++process_index)
+  // fork all children, each with a unique index
+  process_index = args->jobs-1;
+  while (process_index)
   {
-    if (fork() == 0)
+    pid_t pid = fork();
+    if (pid == 0)
       break;  // no grandchildren
+
+    --process_index;
+    child_pids[process_index] = pid;
   }
 
   if (args->src_is_file == 1)
@@ -65,29 +72,23 @@ int main (int argc, char **argv)
     process_dir (args->src_dir);
 
   if (process_index == 0)
-    wait_for_children();
-
-  close_extractor();
-
-  if (args->verbose)
   {
-    printf ("Total files: %ld\n",counters.total_files);
-    printf ("Dateless: %ld\n",counters.missing_date);
-    printf ("Duplicates: %ld\n",counters.duplicates);
-    printf ("Skipped: %ld\n",counters.skipped);
-    printf ("Total dirs: %ld\n",counters.total_dirs);
+    wait_for_children();
+    close_extractor();
   }
+
   return 0;
 }
 
 void wait_for_children()
 {
-  int wait_status = 0;
-  int ret = 0;
-
-  do
+  size_t i = 0;
+  for (;i < sizeof(child_pids); i++)
   {
-    ret = wait(&wait_status);
+    if (child_pids[i] == 0)
+      break;
+
+    int ret = wait(&child_pids[i]);
     if (ret == -1)
     {
       if (errno != ECHILD)
@@ -95,7 +96,6 @@ void wait_for_children()
       break;
     }
   }
-  while (wait_status > 0);
 }
 
 void perform_delete_src(file_t* src_file, const char* dst_fqpn)
@@ -186,6 +186,8 @@ void map_and_process_file(const char* path)
   if (index != process_index)
     return;  // another process will handle this file
 
+  counters.total_files++;
+
   // map the file
   file_t* src_file = map_file (path);
   if (!src_file)
@@ -213,14 +215,14 @@ void process_file (file_t* src_file)
   if (!exif_date (src_file,&date) && !extract_date (src_file->fqpn,&date))
   {
     // no date; send this file to the dateless dir
+    counters.missing_date++;
     if (*args->dateless_dir == 0)
     {
-      if (args->verbose)
+      if (args->verbose || args->operation == OPERATION_NOP)
         printf ("Skipping dateless file %s; no dateless directory specified.\n",src_file->fqpn);
       return;
     }
     perform_move_src (src_file,args->dateless_dir);
-    counters.missing_date++;
     return;
   }
 
@@ -320,7 +322,6 @@ void process_dir (const char* dir)
     // if it's a regular file...
     if (entry->d_type & DT_REG)
     {
-      counters.total_files++;
       if (d_name[0] != '.')  // we ignore hidden files
       {
         map_and_process_file (path);

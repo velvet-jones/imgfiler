@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: imgfiler
 .\"    Author: [see the "AUTHOR" section]
-.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 08/26/2016
+.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
+.\"      Date: 09/02/2016
 .\"    Manual: \ \&
 .\"    Source: \ \&
 .\"  Language: English
 .\"
-.TH "IMGFILER" "1" "08/26/2016" "\ \&" "\ \&"
+.TH "IMGFILER" "1" "09/02/2016" "\ \&" "\ \&"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -155,13 +155,13 @@ Hidden directories and files are skipped\&.
 .RE
 .SH "EXAMPLE"
 .sp
-In the directory structure below we want to scan the \fIuploads/\fR directory for new photos and file them under \fIdated/\fR or \fIdateless/\fR\&. The command line would be:
+In the directory structure below we want to scan the \fIphotos/uploads/\fR directory for new photos and file them under \fIphotos/\fR or \fIphotos/dateless/\fR\&. The command line would be:
 .sp
 .if n \{\
 .RS 4
 .\}
 .nf
-$ imgfiler \-\-move \-\-source /photos/uploads \-\-destination /photos/dated \-\-dateless /photos/dateless
+$ imgfiler \-\-move \-\-source=/photos/uploads \-\-destination=/photos \-\-dateless=/photos/dateless
 .fi
 .if n \{\
 .RE
@@ -174,8 +174,6 @@ $ imgfiler \-\-move \-\-source /photos/uploads \-\-destination /photos/dated \-\
 .\}
 .nf
 /photos/
-  |
-  \- dated/
   |
   \- dateless/
   |
@@ -193,7 +191,7 @@ $ imgfiler \-\-move \-\-source /photos/uploads \-\-destination /photos/dated \-\
 .sp
 .SH "BUGS"
 .sp
-When running multiple jobs, the foreground process doesn\(cqt seem to correctly wait for the child processes\&. It (incorrectly) exits when it has completed its job, not when all children have completed their jobs\&.
+No known bugs
 .SH "AUTHOR"
 .sp
 Imagefiler was written by Bud Millwood\&.

@@ -85,18 +85,16 @@ NOTES
 
 EXAMPLE
 -------
-In the directory structure below we want to scan the 'uploads/' directory for new photos
-and file them under 'dated/' or 'dateless/'. The command line would be:
+In the directory structure below we want to scan the 'photos/uploads/' directory for new photos
+and file them under 'photos/' or 'photos/dateless/'. The command line would be:
 
 ----
-$ imgfiler --move --source /photos/uploads --destination /photos/dated --dateless /photos/dateless
+$ imgfiler --move --source=/photos/uploads --destination=/photos --dateless=/photos/dateless
 ----
 
 .Directory structure
 ----
 /photos/
-  |
-  - dated/
   |
   - dateless/
   |
@@ -111,9 +109,7 @@ $ imgfiler --move --source /photos/uploads --destination /photos/dated --dateles
 
 BUGS
 ----
-When running multiple jobs, the foreground process doesn't seem to correctly wait for the child processes.
-It (incorrectly) exits when it has completed its job, not when all children have completed their jobs.
-
+No known bugs
 
 AUTHOR
 ------

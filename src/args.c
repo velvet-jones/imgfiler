@@ -110,10 +110,6 @@ const args_t* get_args (int argc, char **argv)
     }
   }
 
-  // if performing a dry run (default), be verbose
-  if (args.operation == OPERATION_NOP)
-    args.verbose = 1;
-
   // we don't support position arguments
   if (optind < argc)
   {
@@ -128,14 +124,6 @@ const args_t* get_args (int argc, char **argv)
 
   validate_args (argv[0],&args);
 
-  if (args.verbose)
-  {
-    printf ("Source: %s\n",args.src_dir);
-    printf ("Destination dir: %s\n",args.dst_dir);
-    printf ("Dateless dir: %s\n",args.dateless_dir);
-    printf ("Duplicates dir: %s\n",args.dup_dir);
-  }
-
   return &args;
 }
 
@@ -149,6 +137,7 @@ void show_help(const char* app)
   printf("  -j, --jobs                Number of simultaneous jobs to run\n");
   printf("  --move                    Default behavior suggests only; use this to perform the operations\n");
   printf("  --md5                     Use md5 instead of the default sha1\n");
+  printf("  --verbose                 Enable extra logging\n");
   printf("  -v, --version             Show the version number\n");
   printf("  -h, --help                Show this help\n");
 }

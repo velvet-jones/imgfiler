@@ -910,18 +910,16 @@ Hidden directories and files are skipped.
 <div class="sect1">
 <h2 id="_example">EXAMPLE</h2>
 <div class="sectionbody">
-<div class="paragraph"><p>In the directory structure below we want to scan the <em>uploads/</em> directory for new photos
-and file them under <em>dated/</em> or <em>dateless/</em>. The command line would be:</p></div>
+<div class="paragraph"><p>In the directory structure below we want to scan the <em>photos/uploads/</em> directory for new photos
+and file them under <em>photos/</em> or <em>photos/dateless/</em>. The command line would be:</p></div>
 <div class="listingblock">
 <div class="content">
-<pre><code>$ imgfiler --move --source /photos/uploads --destination /photos/dated --dateless /photos/dateless</code></pre>
+<pre><code>$ imgfiler --move --source=/photos/uploads --destination=/photos --dateless=/photos/dateless</code></pre>
 </div></div>
 <div class="listingblock">
 <div class="title">Directory structure</div>
 <div class="content">
 <pre><code>/photos/
-  |
-  - dated/
   |
   - dateless/
   |
@@ -938,8 +936,7 @@ and file them under <em>dated/</em> or <em>dateless/</em>. The command line woul
 <div class="sect1">
 <h2 id="_bugs">BUGS</h2>
 <div class="sectionbody">
-<div class="paragraph"><p>When running multiple jobs, the foreground process doesn&#8217;t seem to correctly wait for the child processes.
-It (incorrectly) exits when it has completed its job, not when all children have completed their jobs.</p></div>
+<div class="paragraph"><p>No known bugs</p></div>
 </div>
 </div>
 <div class="sect1">
@@ -965,7 +962,8 @@ granted under the terms of the GNU General Public License version 3 (GPLv3).</p>
 <div id="footnotes"><hr /></div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2016-08-26 18:37:20 CEST
+Last updated
+ 2016-09-02 08:41:23 CEST
 </div>
 </div>
 </body>

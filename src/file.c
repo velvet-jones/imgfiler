@@ -55,6 +55,7 @@ file_t* map_file (const char* fqpn)
 // returns 0 on success
 int unmap_file (file_t* file)
 {
-  return munmap (file->addr,file->st.st_size);
+  int ret = munmap (file->addr,file->st.st_size);
   free (file);
+  return ret; // assumes 'free' doesn't set errno
 }

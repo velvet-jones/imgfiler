@@ -164,8 +164,8 @@ bool validate_name (const char* name, mode_t mode)
 // create a directory structure, like 'mkdir -p' does
 bool create_directory_if (const char* dir)
 {
-  char tmp[PATH_MAX];
-  memset (tmp,0,PATH_MAX);
+  char tmp[MAX_PATH];
+  memset (tmp,0,MAX_PATH);
 
   const char* component = strchr (dir,'/');
   while (component)

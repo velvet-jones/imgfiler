@@ -46,4 +46,8 @@ const char* get_extension (const char* fqpn);
 bool validate_name (const char* name, mode_t mode);
 bool create_directory_if (const char* dir);
 
+#ifndef MAX_PATH
+#define MAX_PATH MAXPATHLEN
+#endif
+
 #endif // INC_COMMON_H

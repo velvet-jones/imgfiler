@@ -76,6 +76,7 @@ Directory structure
             - file.jpg
         |
         - august/
+        - hugo/
 
 Pruning empty directories
 -------------------------

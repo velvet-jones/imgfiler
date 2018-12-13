@@ -753,7 +753,7 @@ IMGFILER(1) Manual Page
 <div class="sect1">
 <h2 id="_description">DESCRIPTION</h2>
 <div class="sectionbody">
-<div class="paragraph"><p>The imgfiler(1) command re-organizes your digital photos by moving them from
+<div class="paragraph"><p>The imgfiler(1) command reorganizes your digital photos by moving them from
 <em>SOURCE</em> to a subdirectory in <em>DEST</em> based on the date the photo was taken.</p></div>
 </div>
 </div>
@@ -766,7 +766,8 @@ IMGFILER(1) Manual Page
 </dt>
 <dd>
 <p>
-    Required. The source directory containing photos you want to re-organize. Optionally, the name of a single photo.
+    Required. The source directory containing photos you want to reorganize.
+    Optionally, the name of a single photo.
 </p>
 </dd>
 <dt class="hdlist1">
@@ -774,7 +775,7 @@ IMGFILER(1) Manual Page
 </dt>
 <dd>
 <p>
-    Required. The destination directory that receives the re-organized photos.
+    Required. The destination directory that receives the reorganized photos.
     Can be the same as the source directory.
 </p>
 </dd>
@@ -904,6 +905,13 @@ Photos are renamed according to their <em>hash</em>. A hash of a digital photo i
 Hidden directories and files are skipped.
 </p>
 </li>
+<li>
+<p>
+In order to process video files, make sure you have libextractor installed when
+  compiling this software. You will also need gstreamer and its various plugins
+  for processing video files.
+</p>
+</li>
 </ul></div>
 </div>
 </div>
@@ -963,7 +971,7 @@ granted under the terms of the GNU General Public License version 3 (GPLv3).</p>
 <div id="footer">
 <div id="footer-text">
 Last updated
- 2016-09-02 08:41:23 CEST
+ 2018-12-13 02:50:55 CET
 </div>
 </div>
 </body>

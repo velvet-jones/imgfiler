@@ -15,17 +15,18 @@ SYNOPSIS
 
 DESCRIPTION
 -----------
-The imgfiler(1) command re-organizes your digital photos by moving them from
+The imgfiler(1) command reorganizes your digital photos by moving them from
 'SOURCE' to a subdirectory in 'DEST' based on the date the photo was taken.
 
 
 OPTIONS
 -------
 *-s, --source*::
-    Required. The source directory containing photos you want to re-organize. Optionally, the name of a single photo.
+    Required. The source directory containing photos you want to reorganize.
+    Optionally, the name of a single photo.
 
 *-d, --destination*::
-    Required. The destination directory that receives the re-organized photos.
+    Required. The destination directory that receives the reorganized photos.
     Can be the same as the source directory.
 
 *-l, --dateless*::
@@ -82,6 +83,10 @@ NOTES
   long sequence of seemingly random characters that uniquely identify that photo.
 
 - Hidden directories and files are skipped.
+
+- In order to process video files, make sure you have libextractor installed when
+  compiling this software. You will also need gstreamer and its various plugins
+  for processing video files.
 
 EXAMPLE
 -------

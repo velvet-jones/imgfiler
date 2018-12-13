@@ -31,18 +31,6 @@ void right_trim(char* buf, char c)
   *++s = 0; /* nul terminate the string on the first of the final spaces */
 }
 
-bool is7BitAscii (const char* s)
-{
-  const char* p = s;
-  while (*p != 0)
-  {
-    if (*p & 0x80)
-      return false;
-    p++;
-  }
-  return true;
-}
-
 const char* contains (const char* s, char c)
 {
   const char* p = s;

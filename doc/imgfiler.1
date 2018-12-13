@@ -2,12 +2,12 @@
 .\"     Title: imgfiler
 .\"    Author: [see the "AUTHOR" section]
 .\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 09/02/2016
+.\"      Date: 12/13/2018
 .\"    Manual: \ \&
 .\"    Source: \ \&
 .\"  Language: English
 .\"
-.TH "IMGFILER" "1" "09/02/2016" "\ \&" "\ \&"
+.TH "IMGFILER" "1" "12/13/2018" "\ \&" "\ \&"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -34,17 +34,17 @@ imgfiler \- A utility for organizing digital photos
 \fBimgfiler\fR [\fIOPTIONS\fR]
 .SH "DESCRIPTION"
 .sp
-The imgfiler(1) command re\-organizes your digital photos by moving them from \fISOURCE\fR to a subdirectory in \fIDEST\fR based on the date the photo was taken\&.
+The imgfiler(1) command reorganizes your digital photos by moving them from \fISOURCE\fR to a subdirectory in \fIDEST\fR based on the date the photo was taken\&.
 .SH "OPTIONS"
 .PP
 \fB\-s, \-\-source\fR
 .RS 4
-Required\&. The source directory containing photos you want to re\-organize\&. Optionally, the name of a single photo\&.
+Required\&. The source directory containing photos you want to reorganize\&. Optionally, the name of a single photo\&.
 .RE
 .PP
 \fB\-d, \-\-destination\fR
 .RS 4
-Required\&. The destination directory that receives the re\-organized photos\&. Can be the same as the source directory\&.
+Required\&. The destination directory that receives the reorganized photos\&. Can be the same as the source directory\&.
 .RE
 .PP
 \fB\-l, \-\-dateless\fR
@@ -152,6 +152,17 @@ Photos are renamed according to their
 .IP \(bu 2.3
 .\}
 Hidden directories and files are skipped\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+In order to process video files, make sure you have libextractor installed when compiling this software\&. You will also need gstreamer and its various plugins for processing video files\&.
 .RE
 .SH "EXAMPLE"
 .sp

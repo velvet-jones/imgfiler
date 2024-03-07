@@ -153,7 +153,7 @@ void perform_move_src(file_t* src_file, const char* dst_dir)
         fprintf (stderr,"Failed to create directory %s: %s.\n",dst_dir,strerror (errno));
         return;
       }
-      snprintf (dst_fqpn,PATH_MAX,"%s/%s",dst_dir,src_file->hash);
+      snprintf (dst_fqpn,PATH_MAX-2,"%s/%s",dst_dir,src_file->hash);
 
       if (args->verbose)
         printf ("Move %s -> %s\n",src_file->fqpn,dst_fqpn);

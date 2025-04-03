@@ -15,9 +15,9 @@ This project uses third party code from:
 
 Build Dependencies
 ------------------
-libexif : required
-libextractor: optional, for files other than images
-asciidoc: optional, for building documentation
+  - libexif : required
+  - libextractor: optional, for files other than images
+  - asciidoc: optional, for building documentation
 
 Configuration
 -------------

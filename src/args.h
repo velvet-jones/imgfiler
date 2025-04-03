@@ -33,6 +33,7 @@ typedef struct {
   int   verbose;                // extra logging
   int   operation;              // nop/copy/move
   int   hash;                   // nop/copy/move
+  int   format;                 // dst directory format; 0=YYYY/MM-DD, 1=YYYY/MM
   int   src_is_file;            // src_dir refers to: 0 = dir, 1 = file
   int   jobs;
 } args_t;

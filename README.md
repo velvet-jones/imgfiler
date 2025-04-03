@@ -39,6 +39,9 @@ All setting are provided on the command line. There is no configuration file.
 --jobs:: Run multiple jobs in parallel. If your disk utilization is low, increase the number of jobs
          until you hit 100%.
 
+--format:: Specifies the destination directory format. 0=YYYY/MM-DD, 1=YYYY/MM. A general-purpose date format
+           is not provided because it's error-prone and probably of minimal value anyway.
+
 --md5:: Use MD5 instead of SHA1 for hashing.
 
 --verbose:: Print information about each operation. Verbose is enabled by default if

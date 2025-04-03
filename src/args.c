@@ -47,13 +47,14 @@ const args_t* get_args (int argc, char **argv)
         {"duplicates",  required_argument, 0, 'u'},
         {"dateless",    required_argument, 0, 'l'},
         {"jobs",        required_argument, 0, 'j'},
+        {"format",      required_argument, 0, 'f'},
         {0,             0,                 0, 0}
     };
 
     /* getopt_long stores the option index here. */
     int option_index = 0;
 
-    c = getopt_long (argc, argv, "vhj:s:d:u:l:", long_options, &option_index);
+    c = getopt_long (argc, argv, "vhj:s:d:u:l:f:", long_options, &option_index);
 
     /* Detect the end of the options. */
     if (c == -1)
@@ -89,6 +90,10 @@ const args_t* get_args (int argc, char **argv)
 
       case 'j':
         args.jobs = atoi (optarg);
+      break;
+
+      case 'f':
+        args.format = atoi (optarg);
       break;
 
       case 'v':
@@ -135,6 +140,7 @@ void show_help(const char* app)
   printf("  -u, --duplicates          If provided, holds duplicates; otherwise duplicate files are deleted\n");
   printf("  -l, --dateless            If provided, holds dateless; otherwise dateless files are skipped\n");
   printf("  -j, --jobs                Number of simultaneous jobs to run\n");
+  printf("  -f, --format              Destination directory format; 0=YYYY/MM-DD, 1=YYYY/MM\n");
   printf("  --move                    Default behavior suggests only; use this to perform the operations\n");
   printf("  --md5                     Use md5 instead of the default sha1\n");
   printf("  --verbose                 Enable extra logging\n");

@@ -16,6 +16,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <assert.h>
 #include <errno.h>
 #include <dirent.h>
 #include <limits.h>
@@ -169,7 +170,22 @@ bool format_dst (const char* base_dir, const date_t* date, const char* dst_name,
 {
   memset (dst_dir,0,PATH_MAX);
 
-  int ret = snprintf (dst_dir,PATH_MAX-1,"%s/%04u/%02u-%02u",base_dir,date->tm.tm_year+1900,date->tm.tm_mon+1,date->tm.tm_mday);
+  int ret = 0;
+  switch (args->format)
+  {
+    case 0:
+      ret = snprintf (dst_dir,PATH_MAX-1,"%s/%04u/%02u-%02u",base_dir,date->tm.tm_year+1900,date->tm.tm_mon+1,date->tm.tm_mday);
+    break;
+
+    case 1:
+      ret = snprintf (dst_dir,PATH_MAX-1,"%s/%04u/%02u",base_dir,date->tm.tm_year+1900,date->tm.tm_mon+1);
+    break;
+
+    default:
+      fprintf (stderr,"Invalid destination directory format %i.\n",args->format);
+      exit(1);
+      break;
+  }
   if (ret < 0 || ret >= PATH_MAX-1)
     return false;  // failed to properly format
 

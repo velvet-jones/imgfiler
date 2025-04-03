@@ -14,8 +14,8 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <openssl/sha.h>
-#include <openssl/md5.h>
+#include "sha1.h"
+#include "md5.h"
 #include "hash.h"
 #include "common.h"
 #include <stdio.h>
@@ -61,19 +61,16 @@ bool compute_hash (const args_t* args, file_t* file)
 // outputs dst_name, the string representation of the file's sha1
 bool compute_sha1(file_t* file)
 {
-  SHA_CTX context;
-  if(!SHA1_Init(&context))
-    return false;
+  SHA1_CTX context;
+  SHA1_Init(&context);
 
-  if (!SHA1_Update(&context, file->addr, file->st.st_size))
-    return false;
+  SHA1_Update(&context, file->addr, file->st.st_size);
 
-  unsigned char md[SHA_DIGEST_LENGTH];
-  if(!SHA1_Final(md, &context))
-    return false;
+  unsigned char md[SHA1_BLOCK_SIZE];
+  SHA1_Final(&context,md);
 
   int i = 0;
-  for (; i < SHA_DIGEST_LENGTH; i++)
+  for (; i < SHA1_BLOCK_SIZE; i++)
     sprintf(&file->hash[i*2], "%02x", (unsigned int)md[i]);
 
   strcpy (&file->hash[i*2],get_extension(file->fqpn));
@@ -83,16 +80,13 @@ bool compute_sha1(file_t* file)
 // outputs dst_name, the string representation of the file's md5
 bool compute_md5(file_t* file)
 {
-  MD5_CTX context;
-  if(!MD5_Init(&context))
-    return false;
+  md5_context context;
+  md5_starts(&context);
 
-  if (!MD5_Update(&context, file->addr, file->st.st_size))
-    return false;
+  md5_update(&context, file->addr, file->st.st_size);
 
   unsigned char md[MD5_DIGEST_LENGTH];
-  if(!MD5_Final(md, &context))
-    return false;
+  md5_finish(&context, md);
 
   int i = 0;
   for (; i < MD5_DIGEST_LENGTH; i++)

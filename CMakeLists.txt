@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 2.6)
+cmake_minimum_required (VERSION 2.6...3.31)
 
 project(imgfiler C)
 
@@ -40,7 +40,6 @@ endif("${CMAKE_C_COMPILER_ID}" MATCHES "Clang")
 
 # locate packages we need or want
 find_package (EXIF REQUIRED)
-find_package (OpenSSL REQUIRED)
 find_package (Extractor)
 find_package (Asciidoc)
 

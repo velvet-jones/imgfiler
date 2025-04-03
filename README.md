@@ -2,10 +2,22 @@ Image Filer
 ===========
 A utility for organizing digital photos.
 
-*Copyright (c) 2016 Bud Millwood*
+*Copyright (c) 2016-2025 Bud Millwood*
 
 This program re-organizes your digital photos by moving them
 into a directory based on the date the photo was taken.
+
+Acknowledgements
+----------------
+This project uses third party code from:
+  - Christophe Devine (license found in md5.c)
+  - Hallo Weeks (license found in licenses/halloweeks-sha1.LICENSE)
+
+Build Dependencies
+------------------
+libexif : required
+libextractor: optional, for files other than images
+asciidoc: optional, for building documentation
 
 Configuration
 -------------
